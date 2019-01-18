@@ -239,9 +239,9 @@ static void send_msg_features(usbd_device *dev)
 			// msg_id
 			"\x00\x11"
 			// msg_size
-			"\x00\x00\x00\x1e"
+			"\x00\x00\x00\x18"
 			// data
-			"\x0a" "\x11" "bitcointrezor.com"
+			"\x0a" "\x0b" "skycoin.net"
 			"\x10" VERSION_MAJOR_CHAR
 			"\x18" VERSION_MINOR_CHAR
 			"\x20" VERSION_PATCH_CHAR
@@ -258,9 +258,9 @@ static void send_msg_features(usbd_device *dev)
 			// msg_id
 			"\x00\x11"
 			// msg_size
-			"\x00\x00\x00\x1e"
+			"\x00\x00\x00\x18"
 			// data
-			"\x0a\x11" "bitcointrezor.com"
+			"\x0a\x0b" "skycoin.net"
 			"\x10" VERSION_MAJOR_CHAR
 			"\x18" VERSION_MINOR_CHAR
 			"\x20" VERSION_PATCH_CHAR
