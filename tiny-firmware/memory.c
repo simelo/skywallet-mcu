@@ -51,6 +51,13 @@ void memory_protect(void)
 }
 #endif
 
+uint8_t memory_protection_enabled(void) {
+	if (((FLASH_OPTION_BYTES_1 & 0xFFEC) == 0xCCEC) && ((FLASH_OPTION_BYTES_2 & 0xFFF) == 0xFFC) && (FLASH_OPTCR == 0x0FFCCCED)) {
+		return 1; // already set up correctly - bail out
+	}
+	return 0;
+}
+
 int memory_bootloader_hash(uint8_t *hash)
 {
 	sha256_Raw(FLASH_PTR(FLASH_BOOT_START), FLASH_BOOT_LEN, hash);

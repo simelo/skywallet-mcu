@@ -233,6 +233,12 @@ void fsm_msgApplySettings(ApplySettings *msg)
 	layoutHome();
 }
 
+void fsm_msgIsMemoryProtected(IsMemoryProtected * msg) {
+	(void)(msg);
+	fsm_sendFailure(FailureType_Failure_UnexpectedMessage, "This message is only available in bootloader mode");
+	return;
+}
+
 void fsm_msgGetVersion(GetVersion *msg) {
 	(void)msg;
 	char str[50];

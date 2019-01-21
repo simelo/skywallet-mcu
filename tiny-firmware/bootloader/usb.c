@@ -204,6 +204,42 @@ static void send_msg_success(usbd_device *dev)
 		, 64) != 64) {}
 }
 
+static void send_memory_protect(usbd_device *dev) {
+	if (memory_protection_enabled()) {
+		// response: Success message (id 2), payload len 0
+		while ( usbd_ep_write_packet(dev, ENDPOINT_ADDRESS_IN,
+			// header
+			"?##"
+			// msg_id
+			"\x00\x02"
+			// msg_size
+			"\x00\x00\x00\x14"
+			// data
+			"\x0a\x12"
+			"mem protection : 1"
+			// padding
+			"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+			, 64) != 64) {}
+
+	} else {
+
+		// response: Success message (id 2), payload len 0
+		while ( usbd_ep_write_packet(dev, ENDPOINT_ADDRESS_IN,
+			// header
+			"?##"
+			// msg_id
+			"\x00\x02"
+			// msg_size
+			"\x00\x00\x00\x14"
+			// data
+			"\x0a\x12"
+			"mem protection : 0"
+			// padding
+			"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+			, 64) != 64) {}
+	}
+}
+
 static void send_msg_failure(usbd_device *dev)
 {
 	// response: Failure message (id 3), payload len 2
@@ -345,6 +381,10 @@ static void hid_rx_callback(usbd_device *dev, uint8_t ep)
 		}
 		if (msg_id == 0x0037) {		// GetFeatures message (id 55)
 			send_msg_features(dev);
+			return;
+		}
+		if (msg_id == 121) {
+			send_memory_protect(dev);
 			return;
 		}
 		if (msg_id == 0x0001) {		// Ping message (id 1)
