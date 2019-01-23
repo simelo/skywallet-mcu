@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "check.h"
+#include <check.h>
+
 #include "sha2.h" //SHA256_DIGEST_LENGTH
 #include "base58.h"
 #include "ecdsa.h"

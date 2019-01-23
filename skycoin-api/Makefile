@@ -23,8 +23,16 @@ CFLAGS   += $(OPTFLAGS) \
             -Wformat-security \
             -Werror
 
-TESTINC=-I$(CHECK_PATH)/src
-TESTINC+=-I$(CHECK_PATH)
+ifneq ($(CHECK_PATH),)
+ifeq ($(UNAME_S), Linux)
+	TESTINC+=-isystem $(CHECK_PATH)/src
+	TESTINC+=-isystem $(CHECK_PATH)
+endif
+ifeq ($(UNAME_S), Darwin)
+	TESTINC+=-isystem $(CHECK_PATH)/include
+endif
+endif
+
 INC=-Itools/
 CFLAGS += -I. $(INC)
 
