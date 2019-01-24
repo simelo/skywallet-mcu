@@ -1,0 +1,3 @@
+[submodule "skycoin-api/test/libskycoin"]
+	path = skycoin-api/test/libskycoin
+	url = https://github.com/skycoin/libskycoin
