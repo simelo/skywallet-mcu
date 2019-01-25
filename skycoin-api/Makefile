@@ -1,5 +1,5 @@
 CC       ?= gcc
-
+UNAME_S  ?= $(shell uname -s)
 OPTFLAGS ?= -O3 -g -fPIC
 
 CFLAGS   += $(OPTFLAGS) \
@@ -34,6 +34,8 @@ endif
 endif
 
 INC=-Itools/
+INC += -Itest/libskycoin/include
+# $(shell rm -rf test/libskycoin/include/libskycoin.h)
 CFLAGS += -I. $(INC)
 
 SRCS += skycoin_crypto.c
@@ -43,6 +45,8 @@ SRCS += $(shell ls tools/*.c)
 
 OBJS   = $(SRCS:.c=.o)
 TEST_SRCS  += $(wildcard test/*.c)
+TEST_SRCS  += test/libskycoin/lib/cgo/tests/shared_tests.c
+TEST_SRCS  += test/a.c
 TEST_OBJS  += $(TEST_SRCS:.c=.o)
 
 
@@ -66,8 +70,18 @@ test_skycoin_crypto.o: test_skycoin_crypto.c
 test_skycoin_crypto: test_skycoin_crypto.o libskycoin-crypto.so
 	$(CC) test_skycoin_crypto.o $(OBJS) -L. -lskycoin-crypto $(LIBS) $(TESTLIBS) -o test_skycoin_crypto
 
-test_libskycoin: $(TEST_OBJS) $(OBJS)
-	$(CC) $(TEST_OBJS) $(OBJS) -L. -lskycoin-crypto $(LIBS) $(TESTLIBS) -o test_libskycoin
+libskycoin-striped:
+	make -C test/libskycoin test-libc
+	objcopy \
+	test/libskycoin/build/libskycoin/libskycoin.a libskycoin.a \
+	--strip-symbol=SKY_cipher_SecKeyFromHex
+	rm test/libskycoin/build/libskycoin/libskycoin.a
+
+test_libskycoin: $(TEST_OBJS) $(OBJS) libskycoin-striped
+	@echo "LIBS $(LIBS)"
+	@echo "TESTLIBS $(TESTLIBS)"
+	# Do not link(create executable) for now.
+	# $(CC) $(TEST_OBJS) $(OBJS) -L. -lskycoin-crypto -lskycoin $(LIBS) $(TESTLIBS) -o test_libskycoin
 
 test: test_skycoin_crypto test_libskycoin
 	./test_skycoin_crypto
