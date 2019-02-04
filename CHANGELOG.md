@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Firmware and bootloader generation tested on linux and osx (travis-ci)
+- `IsMemoryProtect` message to determine whether device is flashed in RDP 2 level
 
 ### Fixed
 
