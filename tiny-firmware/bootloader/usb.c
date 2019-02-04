@@ -261,7 +261,7 @@ static void send_msg_failure(usbd_device *dev)
 static void send_msg_features(usbd_device *dev)
 {
 	// response: Features message (id 17), payload len 30
-	//           - vendor = "bitcointrezor.com"
+	//           - vendor = "skycoin.net"
 	//           - major_version = VERSION_MAJOR
 	//           - minor_version = VERSION_MINOR
 	//           - patch_version = VERSION_PATCH
