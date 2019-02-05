@@ -23,18 +23,35 @@
 #include <SDL.h>
 #endif
 
-uint16_t buttonRead(void) {
+uint16_t buttonRead(void)
+{
 	uint16_t state = 0;
 
 #if !HEADLESS
 	const uint8_t *scancodes = SDL_GetKeyboardState(NULL);
-	if (scancodes[SDL_SCANCODE_LEFT]) {
+	if (scancodes[SDL_SCANCODE_LEFT])
+	{
 		state |= BTN_PIN_NO;
 	}
-	if (scancodes[SDL_SCANCODE_RIGHT]) {
+	if (scancodes[SDL_SCANCODE_RIGHT])
+	{
 		state |= BTN_PIN_YES;
 	}
 #endif
 
+	return ~state;
+}
+
+uint16_t buttonYes(void)
+{
+	uint16_t state = 0;
+	state |= BTN_PIN_YES;
+	return ~state;
+}
+
+uint16_t buttonNo(void)
+{
+	uint16_t state = 0;
+	state |= BTN_PIN_NO;
 	return ~state;
 }
