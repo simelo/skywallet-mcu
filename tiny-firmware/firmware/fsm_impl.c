@@ -143,7 +143,7 @@ ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp)
 	return ErrOk;
 }
 
-void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp)
+ErrCode_t msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp)
 {
 	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
 	// /2 because the hex to buff conversion.
@@ -172,4 +172,5 @@ void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success 
 	memcpy(resp->message, pubkeybase58, pubkeybase58_size);
 	resp->has_message = true;
 	msg_write(MessageType_MessageType_Success, resp);
+	return ErrOk;
 }

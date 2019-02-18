@@ -489,7 +489,6 @@ void fsm_msgWipeDevice(WipeDevice *msg)
 }
 
 void fsm_msgGenerateMnemonic(GenerateMnemonic* msg) {
-	RESP_INIT(Success);
 	if(msgGenerateMnemonicImpl(msg) == ErrOk) {
 		fsm_sendSuccess(_("Mnemonic successfully configured"));
 	}
