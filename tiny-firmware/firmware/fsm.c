@@ -273,8 +273,9 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 		if (strValueMsg == NULL) {
 			// FIXME: For Skycoin coin supply and precision buffer size should be enough
 			strcpy(strCoin, "too many coins");
+		} else {
+		  sprintf(strCoin, "%s %s %s", _("send"), strValueMsg, coinString);
 		}
-		sprintf(strCoin, "%s %s %s", _("send"), strValueMsg, coinString);
 		sprintf(strHour, "%" PRIu64 " %s", msg->transactionOut[i].hour, hourString);
 
 		if (msg->transactionOut[i].has_address_index) {
