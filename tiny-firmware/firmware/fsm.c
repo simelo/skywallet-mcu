@@ -356,9 +356,11 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 
 void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
 {
-	RESP_INIT(ResponseSkycoinSignMessage);
-	memset(msg, 0, sizeof(SkycoinSignMessage));
-	msgSkycoinSignMessageImpl(msg, resp);
+	// RESP_INIT(ResponseSkycoinSignMessage);
+	// memset(msg, 0, sizeof(SkycoinSignMessage));
+	// msgSkycoinSignMessageImpl(msg, resp);
+	fsm_sendFailure(FailureType_Failure_UnexpectedMessage,
+					"Invalid message");
 }
 
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
