@@ -20,7 +20,7 @@
 #ifndef __FSM_H__
 #define __FSM_H__
 
-#include "messages.pb.h"
+// #include "messages.pb.h"
 
 // message functions
 
@@ -33,7 +33,7 @@ void fsm_msgGetFeatures(GetFeatures *msg);
 void fsm_msgApplySettings(ApplySettings *msg);
 int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, ResponseSkycoinAddress* respSkycoinAddress, uint32_t start_index);
 void fsm_msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg);
-void fsm_msgSkycoinSignMessage(SkycoinSignMessage* msg);
+// void fsm_msgSkycoinSignMessage(SkycoinSignMessage* msg);
 void fsm_msgSkycoinAddress(SkycoinAddress* msg);
 void fsm_msgGenerateMnemonic(GenerateMnemonic* msg);
 void fsm_msgSetMnemonic(SetMnemonic* msg);

@@ -332,45 +332,45 @@ int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, 
     return 0;
 }
 
-void fsm_msgSkycoinSignMessage(SkycoinSignMessage* msg)
-{
-    uint8_t pubkey[33] = {0};
-    uint8_t seckey[32] = {0};
-	uint8_t digest[32] = {0};
-    size_t size_sign;
-    uint8_t signature[65];
-	char sign58[90] = {0};
-	int res = 0;
+// void fsm_msgSkycoinSignMessage(SkycoinSignMessage* msg)
+// {
+//     uint8_t pubkey[33] = {0};
+//     uint8_t seckey[32] = {0};
+// 	uint8_t digest[32] = {0};
+//     size_t size_sign;
+//     uint8_t signature[65];
+// 	char sign58[90] = {0};
+// 	int res = 0;
 	
-	if (storage_hasMnemonic() == false) {
-		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
-		return;
-	}
+// 	if (storage_hasMnemonic() == false) {
+// 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
+// 		return;
+// 	}
 	
-	CHECK_PIN_UNCACHED
+// 	CHECK_PIN_UNCACHED
 
-	RESP_INIT(ResponseSkycoinSignMessage);
-    fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
-	if (is_digest(msg->message) == false) {
-    	compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
-	} else {
-		writebuf_fromhexstr(msg->message, digest);
-	}
-    res = ecdsa_skycoin_sign(rand(), seckey, digest, signature);
-	if (res == 0)
-	{
-		layoutRawMessage("Signature success");
-	}
-	else
-	{
-		layoutRawMessage("Signature failed");
-	}
-	size_sign = sizeof(sign58);
-    b58enc(sign58, &size_sign, signature, sizeof(signature));
-	memcpy(resp->signed_message, sign58, size_sign);
-	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
-	layoutHome();
-}
+// 	RESP_INIT(ResponseSkycoinSignMessage);
+//     fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
+// 	if (is_digest(msg->message) == false) {
+//     	compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
+// 	} else {
+// 		writebuf_fromhexstr(msg->message, digest);
+// 	}
+//     res = ecdsa_skycoin_sign(rand(), seckey, digest, signature);
+// 	if (res == 0)
+// 	{
+// 		layoutRawMessage("Signature success");
+// 	}
+// 	else
+// 	{
+// 		layoutRawMessage("Signature failed");
+// 	}
+// 	size_sign = sizeof(sign58);
+//     b58enc(sign58, &size_sign, signature, sizeof(signature));
+// 	memcpy(resp->signed_message, sign58, size_sign);
+// 	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
+// 	layoutHome();
+// }
 
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 {
