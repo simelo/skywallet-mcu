@@ -46,48 +46,54 @@
 
 // message methods
 
-static uint8_t msg_resp[MSG_OUT_SIZE] __attribute__ ((aligned));
+static uint8_t msg_resp[MSG_OUT_SIZE] __attribute__((aligned));
 
-#define RESP_INIT(TYPE) \
-			TYPE *resp = (TYPE *) (void *) msg_resp; \
-			_Static_assert(sizeof(msg_resp) >= sizeof(TYPE), #TYPE " is too large"); \
-			memset(resp, 0, sizeof(TYPE));
+#define RESP_INIT(TYPE)                                                      \
+	TYPE *resp = (TYPE *)(void *)msg_resp;                                   \
+	_Static_assert(sizeof(msg_resp) >= sizeof(TYPE), #TYPE " is too large"); \
+	memset(resp, 0, sizeof(TYPE));
 
-#define CHECK_INITIALIZED \
-	if (!storage_isInitialized()) { \
+#define CHECK_INITIALIZED                                          \
+	if (!storage_isInitialized())                                  \
+	{                                                              \
 		fsm_sendFailure(FailureType_Failure_NotInitialized, NULL); \
-		return; \
+		return;                                                    \
 	}
 
-#define CHECK_NOT_INITIALIZED \
-	if (storage_isInitialized()) { \
+#define CHECK_NOT_INITIALIZED                                                                                        \
+	if (storage_isInitialized())                                                                                     \
+	{                                                                                                                \
 		fsm_sendFailure(FailureType_Failure_UnexpectedMessage, _("Device is already initialized. Use Wipe first.")); \
-		return; \
+		return;                                                                                                      \
 	}
 
-#define CHECK_PIN \
-	if (!protectPin(true)) { \
-		layoutHome(); \
-		return; \
+#define CHECK_PIN          \
+	if (!protectPin(true)) \
+	{                      \
+		layoutHome();      \
+		return;            \
 	}
 
-#define CHECK_PIN_UNCACHED \
-	if (!protectPin(false)) { \
-		layoutHome(); \
-		return; \
+#define CHECK_PIN_UNCACHED  \
+	if (!protectPin(false)) \
+	{                       \
+		layoutHome();       \
+		return;             \
 	}
 
-#define CHECK_PARAM(cond, errormsg) \
-	if (!(cond)) { \
+#define CHECK_PARAM(cond, errormsg)                                 \
+	if (!(cond))                                                    \
+	{                                                               \
 		fsm_sendFailure(FailureType_Failure_DataError, (errormsg)); \
-		layoutHome(); \
-		return; \
+		layoutHome();                                               \
+		return;                                                     \
 	}
 
 void fsm_sendSuccess(const char *text)
 {
 	RESP_INIT(Success);
-	if (text) {
+	if (text)
+	{
 		resp->has_message = true;
 		strlcpy(resp->message, text, sizeof(resp->message));
 	}
@@ -96,7 +102,8 @@ void fsm_sendSuccess(const char *text)
 
 void fsm_sendFailure(FailureType code, const char *text)
 {
-	if (protectAbortedByInitialize) {
+	if (protectAbortedByInitialize)
+	{
 		fsm_msgInitialize((Initialize *)0);
 		protectAbortedByInitialize = false;
 		return;
@@ -104,53 +111,56 @@ void fsm_sendFailure(FailureType code, const char *text)
 	RESP_INIT(Failure);
 	resp->has_code = true;
 	resp->code = code;
-	if (!text) {
-		switch (code) {
-			case FailureType_Failure_UnexpectedMessage:
-				text = _("Unexpected message");
-				break;
-			case FailureType_Failure_ButtonExpected:
-				text = _("Button expected");
-				break;
-			case FailureType_Failure_DataError:
-				text = _("Data error");
-				break;
-			case FailureType_Failure_ActionCancelled:
-				text = _("Action cancelled by user");
-				break;
-			case FailureType_Failure_PinExpected:
-				text = _("PIN expected");
-				break;
-			case FailureType_Failure_PinCancelled:
-				text = _("PIN cancelled");
-				break;
-			case FailureType_Failure_PinInvalid:
-				text = _("PIN invalid");
-				break;
-			case FailureType_Failure_InvalidSignature:
-				text = _("Invalid signature");
-				break;
-			case FailureType_Failure_ProcessError:
-				text = _("Process error");
-				break;
-			case FailureType_Failure_NotEnoughFunds:
-				text = _("Not enough funds");
-				break;
-			case FailureType_Failure_NotInitialized:
-				text = _("Device not initialized");
-				break;
-			case FailureType_Failure_PinMismatch:
-				text = _("PIN mismatch");
-				break;
-			case FailureType_Failure_FirmwareError:
-				text = _("Firmware error");
-				break;
-			case FailureType_Failure_AddressGeneration:
-				text = _("Failed to generate address");
-				break;
+	if (!text)
+	{
+		switch (code)
+		{
+		case FailureType_Failure_UnexpectedMessage:
+			text = _("Unexpected message");
+			break;
+		case FailureType_Failure_ButtonExpected:
+			text = _("Button expected");
+			break;
+		case FailureType_Failure_DataError:
+			text = _("Data error");
+			break;
+		case FailureType_Failure_ActionCancelled:
+			text = _("Action cancelled by user");
+			break;
+		case FailureType_Failure_PinExpected:
+			text = _("PIN expected");
+			break;
+		case FailureType_Failure_PinCancelled:
+			text = _("PIN cancelled");
+			break;
+		case FailureType_Failure_PinInvalid:
+			text = _("PIN invalid");
+			break;
+		case FailureType_Failure_InvalidSignature:
+			text = _("Invalid signature");
+			break;
+		case FailureType_Failure_ProcessError:
+			text = _("Process error");
+			break;
+		case FailureType_Failure_NotEnoughFunds:
+			text = _("Not enough funds");
+			break;
+		case FailureType_Failure_NotInitialized:
+			text = _("Device not initialized");
+			break;
+		case FailureType_Failure_PinMismatch:
+			text = _("PIN mismatch");
+			break;
+		case FailureType_Failure_FirmwareError:
+			text = _("Firmware error");
+			break;
+		case FailureType_Failure_AddressGeneration:
+			text = _("Failed to generate address");
+			break;
 		}
 	}
-	if (text) {
+	if (text)
+	{
 		resp->has_message = true;
 		strlcpy(resp->message, text, sizeof(resp->message));
 	}
@@ -159,17 +169,24 @@ void fsm_sendFailure(FailureType code, const char *text)
 
 void fsm_msgInitialize(Initialize *msg)
 {
-    recovery_abort();
-	if (msg && msg->has_state && msg->state.size == 64) {
+	recovery_abort();
+	if (msg && msg->has_state && msg->state.size == 64)
+	{
 		uint8_t i_state[64];
-		if (!session_getState(msg->state.bytes, i_state, NULL)) {
+		if (!session_getState(msg->state.bytes, i_state, NULL))
+		{
 			session_clear(false); // do not clear PIN
-		} else {
-			if (0 != memcmp(msg->state.bytes, i_state, 64)) {
+		}
+		else
+		{
+			if (0 != memcmp(msg->state.bytes, i_state, 64))
+			{
 				session_clear(false); // do not clear PIN
 			}
 		}
-	} else {
+	}
+	else
+	{
 		session_clear(false); // do not clear PIN
 	}
 	layoutHome();
@@ -183,49 +200,61 @@ void fsm_msgApplySettings(ApplySettings *msg)
 
 	CHECK_PIN
 
-	if (msg->has_label && strlen(msg->label)) {
+	if (msg->has_label && strlen(msg->label))
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change name to"), msg->label, "?", NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
 	}
-	if (msg->has_language && strlen(msg->label)) {
+	if (msg->has_language && strlen(msg->label))
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change language to"), msg->language, "?", NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
 	}
-	if (msg->has_use_passphrase) {
+	if (msg->has_use_passphrase)
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), msg->use_passphrase ? _("enable passphrase") : _("disable passphrase"), _("protection?"), NULL, NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
 	}
-	if (msg->has_homescreen) {
+	if (msg->has_homescreen)
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change the home"), _("screen?"), NULL, NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
 	}
 
-	if (msg->has_label) {
+	if (msg->has_label)
+	{
 		storage_setLabel(msg->label);
 	}
-	if (msg->has_language) {
+	if (msg->has_language)
+	{
 		storage_setLanguage(msg->language);
 	}
-	if (msg->has_use_passphrase) {
+	if (msg->has_use_passphrase)
+	{
 		storage_setPassphraseProtection(msg->use_passphrase);
 	}
-	if (msg->has_homescreen) {
+	if (msg->has_homescreen)
+	{
 		storage_setHomescreen(msg->homescreen.bytes, msg->homescreen.size);
 	}
 	storage_update();
@@ -233,7 +262,8 @@ void fsm_msgApplySettings(ApplySettings *msg)
 	layoutHome();
 }
 
-void fsm_msgGetVersion(GetVersion *msg) {
+void fsm_msgGetVersion(GetVersion *msg)
+{
 	(void)msg;
 	char str[50];
 	sprintf(str, "Firmware Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -244,76 +274,96 @@ void fsm_msgGetFeatures(GetFeatures *msg)
 {
 	(void)msg;
 	RESP_INIT(Features);
-	resp->has_vendor = true;         strlcpy(resp->vendor, "Skycoin Foundation", sizeof(resp->vendor));
-	resp->has_major_version = true;  resp->major_version = VERSION_MAJOR;
-	resp->has_minor_version = true;  resp->minor_version = VERSION_MINOR;
-	resp->has_patch_version = true;  resp->patch_version = VERSION_PATCH;
-	resp->has_device_id = true;      strlcpy(resp->device_id, storage_uuid_str, sizeof(resp->device_id));
-	resp->has_pin_protection = true; resp->pin_protection = storage_hasPin();
-	resp->has_passphrase_protection = true; resp->passphrase_protection = storage_hasPassphraseProtection();
-	resp->has_bootloader_hash = true; resp->bootloader_hash.size = memory_bootloader_hash(resp->bootloader_hash.bytes);
-	if (storage_getLanguage()) {
+	resp->has_vendor = true;
+	strlcpy(resp->vendor, "Skycoin Foundation", sizeof(resp->vendor));
+	resp->has_major_version = true;
+	resp->major_version = VERSION_MAJOR;
+	resp->has_minor_version = true;
+	resp->minor_version = VERSION_MINOR;
+	resp->has_patch_version = true;
+	resp->patch_version = VERSION_PATCH;
+	resp->has_device_id = true;
+	strlcpy(resp->device_id, storage_uuid_str, sizeof(resp->device_id));
+	resp->has_pin_protection = true;
+	resp->pin_protection = storage_hasPin();
+	resp->has_passphrase_protection = true;
+	resp->passphrase_protection = storage_hasPassphraseProtection();
+	resp->has_bootloader_hash = true;
+	resp->bootloader_hash.size = memory_bootloader_hash(resp->bootloader_hash.bytes);
+	if (storage_getLanguage())
+	{
 		resp->has_language = true;
 		strlcpy(resp->language, storage_getLanguage(), sizeof(resp->language));
 	}
-	if (storage_getLabel()) {
+	if (storage_getLabel())
+	{
 		resp->has_label = true;
 		strlcpy(resp->label, storage_getLabel(), sizeof(resp->label));
 	}
-	
-	resp->has_initialized = true; resp->initialized = storage_isInitialized();
-	resp->has_pin_cached = true; resp->pin_cached = session_isPinCached();
-	resp->has_passphrase_cached = true; resp->passphrase_cached = session_isPassphraseCached();
-	resp->has_needs_backup = true; resp->needs_backup = storage_needsBackup();
-	resp->has_model = true; strlcpy(resp->model, "1", sizeof(resp->model));
+
+	resp->has_initialized = true;
+	resp->initialized = storage_isInitialized();
+	resp->has_pin_cached = true;
+	resp->pin_cached = session_isPinCached();
+	resp->has_passphrase_cached = true;
+	resp->passphrase_cached = session_isPassphraseCached();
+	resp->has_needs_backup = true;
+	resp->needs_backup = storage_needsBackup();
+	resp->has_model = true;
+	strlcpy(resp->model, "1", sizeof(resp->model));
 
 	msg_write(MessageType_MessageType_Features, resp);
 }
 
-void fsm_msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg)
+void fsm_msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature *msg)
 {
 	uint8_t sign[65];
-    size_t size_sign = sizeof(sign);
-    char pubkeybase58[36];
-    uint8_t pubkey[33] = {0};
-    uint8_t digest[32] = {0};
+	size_t size_sign = sizeof(sign);
+	char pubkeybase58[36];
+	uint8_t pubkey[33] = {0};
+	uint8_t digest[32] = {0};
 
-    RESP_INIT(Success);
-	if (is_digest(msg->message) == false) {
-    	compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
-	} else {
+	RESP_INIT(Success);
+	if (is_digest(msg->message) == false)
+	{
+		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
+	}
+	else
+	{
 		writebuf_fromhexstr(msg->message, digest);
 	}
-    size_sign = sizeof(sign);
-    b58tobin(sign, &size_sign, msg->signature);
-    recover_pubkey_from_signed_message((char*)digest, sign, pubkey);
-    size_sign = sizeof(pubkeybase58);
-    generate_base58_address_from_pubkey(pubkey, pubkeybase58, &size_sign);
-    if (memcmp(pubkeybase58, msg->address, size_sign) == 0)
-    {
-        layoutRawMessage("Verification success");
-    }
-    else {
-        layoutRawMessage("Wrong signature");
-    }
-    memcpy(resp->message, pubkeybase58, size_sign);
-    resp->has_message = true;
-    msg_write(MessageType_MessageType_Success, resp);
+	size_sign = sizeof(sign);
+	b58tobin(sign, &size_sign, msg->signature);
+	recover_pubkey_from_signed_message((char *)digest, sign, pubkey);
+	size_sign = sizeof(pubkeybase58);
+	generate_base58_address_from_pubkey(pubkey, pubkeybase58, &size_sign);
+	if (memcmp(pubkeybase58, msg->address, size_sign) == 0)
+	{
+		layoutRawMessage("Verification success");
+	}
+	else
+	{
+		layoutRawMessage("Wrong signature");
+	}
+	memcpy(resp->message, pubkeybase58, size_sign);
+	resp->has_message = true;
+	msg_write(MessageType_MessageType_Success, resp);
 	layoutHome();
 }
 
-int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, ResponseSkycoinAddress* respSkycoinAddress, uint32_t start_index)
+int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t *pubkey, uint8_t *seckey, ResponseSkycoinAddress *respSkycoinAddress, uint32_t start_index)
 {
-    const char* mnemo = storage_getFullSeed();
-    uint8_t seed[33] = {0};
-    uint8_t nextSeed[SHA256_DIGEST_LENGTH] = {0};
+	const char *mnemo = storage_getFullSeed();
+	uint8_t seed[33] = {0};
+	uint8_t nextSeed[SHA256_DIGEST_LENGTH] = {0};
 	size_t size_address = 36;
-    if (mnemo == NULL || nbAddress == 0)
-    {
-        return -1;
-    }
+	if (mnemo == NULL || nbAddress == 0)
+	{
+		return -1;
+	}
 	generate_deterministic_key_pair_iterator((const uint8_t *)mnemo, strlen(mnemo), nextSeed, seckey, pubkey);
-	if (respSkycoinAddress != NULL && start_index == 0) {
+	if (respSkycoinAddress != NULL && start_index == 0)
+	{
 		generate_base58_address_from_pubkey(pubkey, respSkycoinAddress->addresses[0], &size_address);
 		respSkycoinAddress->addresses_count++;
 	}
@@ -323,83 +373,92 @@ int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, 
 		generate_deterministic_key_pair_iterator(seed, 32, nextSeed, seckey, pubkey);
 		memcpy(seed, nextSeed, 32);
 		seed[32] = 0;
-		if (respSkycoinAddress != NULL && ((i + 1) >= start_index)) {
+		if (respSkycoinAddress != NULL && ((i + 1) >= start_index))
+		{
 			size_address = 36;
 			generate_base58_address_from_pubkey(pubkey, respSkycoinAddress->addresses[respSkycoinAddress->addresses_count], &size_address);
 			respSkycoinAddress->addresses_count++;
 		}
 	}
-    return 0;
+	return 0;
 }
 
-// void fsm_msgSkycoinSignMessage(SkycoinSignMessage* msg)
-// {
-//     uint8_t pubkey[33] = {0};
-//     uint8_t seckey[32] = {0};
-// 	uint8_t digest[32] = {0};
-//     size_t size_sign;
-//     uint8_t signature[65];
-// 	char sign58[90] = {0};
-// 	int res = 0;
-	
-// 	if (storage_hasMnemonic() == false) {
-// 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
-// 		return;
-// 	}
-	
-// 	CHECK_PIN_UNCACHED
-
-// 	RESP_INIT(ResponseSkycoinSignMessage);
-//     fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
-// 	if (is_digest(msg->message) == false) {
-//     	compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
-// 	} else {
-// 		writebuf_fromhexstr(msg->message, digest);
-// 	}
-//     res = ecdsa_skycoin_sign(rand(), seckey, digest, signature);
-// 	if (res == 0)
-// 	{
-// 		layoutRawMessage("Signature success");
-// 	}
-// 	else
-// 	{
-// 		layoutRawMessage("Signature failed");
-// 	}
-// 	size_sign = sizeof(sign58);
-//     b58enc(sign58, &size_sign, signature, sizeof(signature));
-// 	memcpy(resp->signed_message, sign58, size_sign);
-// 	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
-// 	layoutHome();
-// }
-
-void fsm_msgSkycoinAddress(SkycoinAddress* msg)
+void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
 {
-    uint8_t seckey[32] = {0};
-    uint8_t pubkey[33] = {0};
+	uint8_t pubkey[33] = {0};
+	uint8_t seckey[32] = {0};
+	uint8_t digest[32] = {0};
+	size_t size_sign;
+	uint8_t signature[65];
+	char sign58[90] = {0};
+	int res = 0;
+
+	if (storage_hasMnemonic() == false)
+	{
+		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
+		return;
+	}
+
+	CHECK_PIN_UNCACHED
+
+	RESP_INIT(ResponseSkycoinSignMessage);
+	fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
+	if (is_digest(msg->message) == false)
+	{
+		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
+	}
+	else
+	{
+		writebuf_fromhexstr(msg->message, digest);
+	}
+	res = ecdsa_skycoin_sign(rand(), seckey, digest, signature);
+	if (res == 0)
+	{
+		layoutRawMessage("Signature success");
+	}
+	else
+	{
+		layoutRawMessage("Signature failed");
+	}
+	size_sign = sizeof(sign58);
+	b58enc(sign58, &size_sign, signature, sizeof(signature));
+	memcpy(resp->signed_message, sign58, size_sign);
+	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
+	layoutHome();
+}
+
+void fsm_msgSkycoinAddress(SkycoinAddress *msg)
+{
+	uint8_t seckey[32] = {0};
+	uint8_t pubkey[33] = {0};
 	uint32_t start_index = !msg->has_start_index ? 0 : msg->start_index;
 
 	CHECK_PIN
 
 	RESP_INIT(ResponseSkycoinAddress);
-	if (msg->address_n > 99) {
+	if (msg->address_n > 99)
+	{
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Asking for too much addresses");
 		return;
 	}
 
-	if (storage_hasMnemonic() == false) {
+	if (storage_hasMnemonic() == false)
+	{
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
 		return;
 	}
 
-	if (fsm_getKeyPairAtIndex(msg->address_n, pubkey, seckey, resp, start_index) != 0) 
+	if (fsm_getKeyPairAtIndex(msg->address_n, pubkey, seckey, resp, start_index) != 0)
 	{
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Key pair generation failed");
 		return;
 	}
-	if (msg->address_n == 1 && msg->has_confirm_address && msg->confirm_address) {
-		char * addr = resp->addresses[0];
+	if (msg->address_n == 1 && msg->has_confirm_address && msg->confirm_address)
+	{
+		char *addr = resp->addresses[0];
 		layoutAddress(addr);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
@@ -413,27 +472,33 @@ void fsm_msgPing(Ping *msg)
 {
 	RESP_INIT(Success);
 
-	if (msg->has_button_protection && msg->button_protection) {
+	if (msg->has_button_protection && msg->button_protection)
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("answer to ping?"), NULL, NULL, NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
 	}
 
-	if (msg->has_pin_protection && msg->pin_protection) {
+	if (msg->has_pin_protection && msg->pin_protection)
+	{
 		CHECK_PIN
 	}
 
-	if (msg->has_passphrase_protection && msg->passphrase_protection) {
-		if (!protectPassphrase()) {
+	if (msg->has_passphrase_protection && msg->passphrase_protection)
+	{
+		if (!protectPassphrase())
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			return;
 		}
 	}
 
-	if (msg->has_message) {
+	if (msg->has_message)
+	{
 		resp->has_message = true;
 		memcpy(&(resp->message), &(msg->message), sizeof(resp->message));
 	}
@@ -444,21 +509,31 @@ void fsm_msgPing(Ping *msg)
 void fsm_msgChangePin(ChangePin *msg)
 {
 	bool removal = msg->has_remove && msg->remove;
-	if (removal) {
-		if (storage_hasPin()) {
+	if (removal)
+	{
+		if (storage_hasPin())
+		{
 			layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("remove current PIN?"), NULL, NULL, NULL, NULL);
-		} else {
+		}
+		else
+		{
 			fsm_sendSuccess(_("PIN removed"));
 			return;
 		}
-	} else {
-		if (storage_hasPin()) {
+	}
+	else
+	{
+		if (storage_hasPin())
+		{
 			layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change current PIN?"), NULL, NULL, NULL, NULL);
-		} else {
+		}
+		else
+		{
 			layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("set new PIN?"), NULL, NULL, NULL, NULL);
 		}
 	}
-	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
@@ -466,14 +541,20 @@ void fsm_msgChangePin(ChangePin *msg)
 
 	CHECK_PIN_UNCACHED
 
-	if (removal) {
+	if (removal)
+	{
 		storage_setPin("");
 		storage_update();
 		fsm_sendSuccess(_("PIN removed"));
-	} else {
-		if (protectChangePin()) {
+	}
+	else
+	{
+		if (protectChangePin())
+		{
 			fsm_sendSuccess(_("PIN changed"));
-		} else {
+		}
+		else
+		{
 			fsm_sendFailure(FailureType_Failure_PinMismatch, NULL);
 		}
 	}
@@ -484,7 +565,8 @@ void fsm_msgWipeDevice(WipeDevice *msg)
 {
 	(void)msg;
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("wipe the device?"), NULL, _("All data will be lost."), NULL, NULL);
-	if (!protectButton(ButtonRequestType_ButtonRequest_WipeDevice, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_WipeDevice, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
@@ -496,17 +578,20 @@ void fsm_msgWipeDevice(WipeDevice *msg)
 	layoutHome();
 }
 
-void fsm_msgGenerateMnemonic(GenerateMnemonic* msg) {
+void fsm_msgGenerateMnemonic(GenerateMnemonic *msg)
+{
 
 	CHECK_NOT_INITIALIZED
-	
-	const char* mnemonic = mnemonic_generate(128);
-	if (mnemonic == 0) {
+
+	const char *mnemonic = mnemonic_generate(128);
+	if (mnemonic == 0)
+	{
 		fsm_sendFailure(FailureType_Failure_ProcessError, _("Device could not generate a Mnemonic"));
 		layoutHome();
 		return;
 	}
-	if (!mnemonic_check(mnemonic)) {
+	if (!mnemonic_check(mnemonic))
+	{
 		fsm_sendFailure(FailureType_Failure_DataError, _("Mnemonic with wrong checksum provided"));
 		layoutHome();
 		return;
@@ -520,18 +605,20 @@ void fsm_msgGenerateMnemonic(GenerateMnemonic* msg) {
 	layoutHome();
 }
 
-void fsm_msgSetMnemonic(SetMnemonic* msg)
+void fsm_msgSetMnemonic(SetMnemonic *msg)
 {
 	CHECK_NOT_INITIALIZED
 
 	RESP_INIT(Success);
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("I take the risk"), NULL, _("Writing seed"), _("is not recommended."), _("Continue only if you"), _("know what you are"), _("doing!"), NULL);
-	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
 	}
-	if (!mnemonic_check(msg->mnemonic)) {
+	if (!mnemonic_check(msg->mnemonic))
+	{
 		fsm_sendFailure(FailureType_Failure_DataError, _("Mnemonic with wrong checksum provided"));
 		layoutHome();
 		return;
@@ -546,7 +633,8 @@ void fsm_msgSetMnemonic(SetMnemonic* msg)
 void fsm_msgGetEntropy(GetEntropy *msg)
 {
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("send entropy?"), NULL, NULL, NULL, NULL);
-	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
@@ -554,7 +642,8 @@ void fsm_msgGetEntropy(GetEntropy *msg)
 
 	RESP_INIT(Entropy);
 	uint32_t len = msg->size;
-	if (len > 1024) {
+	if (len > 1024)
+	{
 		len = 1024;
 	}
 	resp->entropy.size = len;
@@ -568,14 +657,17 @@ void fsm_msgLoadDevice(LoadDevice *msg)
 	CHECK_NOT_INITIALIZED
 
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("I take the risk"), NULL, _("Loading private seed"), _("is not recommended."), _("Continue only if you"), _("know what you are"), _("doing!"), NULL);
-	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
 	}
 
-	if (msg->has_mnemonic && !(msg->has_skip_checksum && msg->skip_checksum) ) {
-		if (!mnemonic_check(msg->mnemonic)) {
+	if (msg->has_mnemonic && !(msg->has_skip_checksum && msg->skip_checksum))
+	{
+		if (!mnemonic_check(msg->mnemonic))
+		{
 			fsm_sendFailure(FailureType_Failure_DataError, _("Mnemonic with wrong checksum provided"));
 			layoutHome();
 			return;
@@ -600,8 +692,7 @@ void fsm_msgResetDevice(ResetDevice *msg)
 		msg->has_pin_protection && msg->pin_protection,
 		msg->has_language ? msg->language : 0,
 		msg->has_label ? msg->label : 0,
-		msg->has_skip_backup ? msg->skip_backup : false
-	);
+		msg->has_skip_backup ? msg->skip_backup : false);
 }
 
 void fsm_msgBackupDevice(BackupDevice *msg)
@@ -610,20 +701,24 @@ void fsm_msgBackupDevice(BackupDevice *msg)
 
 	CHECK_PIN_UNCACHED
 
-	(void)msg;
-	if (!storage_needsBackup()) {
+		(void)
+		msg;
+	if (!storage_needsBackup())
+	{
 		fsm_sendFailure(FailureType_Failure_UnexpectedMessage, _("Seed already backed up"));
 		return;
 	}
 	reset_backup(true);
 
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you confirm you"), _("backed up your seed."), _("This will never be"), _("possible again."), NULL, NULL);
-	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+	if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 		layoutHome();
 		return;
 	}
-	if (storage_unfinishedBackup()) {
+	if (storage_unfinishedBackup())
+	{
 		fsm_sendFailure(FailureType_Failure_ActionCancelled, _("Backup operation did not finish properly."));
 		layoutHome();
 		return;
@@ -637,17 +732,22 @@ void fsm_msgBackupDevice(BackupDevice *msg)
 void fsm_msgRecoveryDevice(RecoveryDevice *msg)
 {
 	const bool dry_run = msg->has_dry_run ? msg->dry_run : false;
-	if (dry_run) {
+	if (dry_run)
+	{
 		CHECK_PIN
-	} else {
+	}
+	else
+	{
 		CHECK_NOT_INITIALIZED
 	}
 
 	CHECK_PARAM(!msg->has_word_count || msg->word_count == 12 || msg->word_count == 18 || msg->word_count == 24, _("Invalid word count"));
 
-	if (!dry_run) {
+	if (!dry_run)
+	{
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("recover the device?"), NULL, NULL, NULL, NULL);
-		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false))
+		{
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
@@ -662,8 +762,7 @@ void fsm_msgRecoveryDevice(RecoveryDevice *msg)
 		msg->has_label ? msg->label : 0,
 		msg->has_enforce_wordlist && msg->enforce_wordlist,
 		msg->has_type ? msg->type : 0,
-		dry_run
-	);
+		dry_run);
 }
 
 void fsm_msgWordAck(WordAck *msg)
@@ -680,9 +779,12 @@ void fsm_msgCancel(Cancel *msg)
 
 void fsm_msgEntropyAck(EntropyAck *msg)
 {
-	if (msg->has_entropy) {
+	if (msg->has_entropy)
+	{
 		reset_entropy(msg->entropy.bytes, msg->entropy.size);
-	} else {
+	}
+	else
+	{
 		reset_entropy(0, 0);
 	}
 }
