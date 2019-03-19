@@ -280,3 +280,10 @@ void msgGetFeaturesImpl(Features *resp)
 	resp->has_needs_backup = true; resp->needs_backup = storage_needsBackup();
 	resp->has_model = true; strlcpy(resp->model, "1", sizeof(resp->model));
 }
+
+void msgSkycoinSignMessage(SkycoinSignMessage *msg)
+{
+	(void)msg;
+	fsm_sendFailure(ErrNotImplemented, "Not Implemented");
+	return;
+}

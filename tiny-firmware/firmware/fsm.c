@@ -354,12 +354,7 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 	layoutHome();
 }
 
-void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
-{
-	(void)msg;
-	fsm_sendFailure(FailureType_Failure_UnexpectedMessage, "Invalid message");
-	return;
-}
+
 
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 {

@@ -233,6 +233,20 @@ START_TEST(test_msgGetFeatures)
 }
 END_TEST
 
+START_TEST(test_msgSkycoinSignMessage)
+{
+  RESP_INIT(ResponseSkycoinSignMessage);
+  char raw_msg[] = {
+	  "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"};
+  SkycoinSignMessage msgSign = SkycoinSignMessage_init_zero;
+  strncpy(msgSign.message, raw_msg, sizeof(msgSign.message));
+  msgSign.address_n = 0;
+  uint8_t msg_resp_sign[MSG_OUT_SIZE] __attribute__((aligned)) = {0};
+  ResponseSkycoinSignMessage *respSign = (ResponseSkycoinSignMessage *)(void *)msg_resp_sign;
+  msgSkycoinSignMessageImpl(&msgSign, resp);
+}
+END_TEST
+
 // define test cases
 TCase *add_fsm_tests(TCase *tc)
 {
@@ -251,5 +265,6 @@ TCase *add_fsm_tests(TCase *tc)
 		tc, 
 		test_msgEntropyAckImplFailAsExpectedForSyncProblemInProtocol);
 	tcase_add_test(tc, test_msgGenerateMnemonicEntropyAckSequenceShouldBeOk);
-	return tc;
+        tcase_add_test(tc, test_msgSkycoinSignMessage);
+        return tc;
 }
