@@ -235,15 +235,16 @@ END_TEST
 
 START_TEST(test_msgSkycoinSignMessage)
 {
-  RESP_INIT(ResponseSkycoinSignMessage);
   char raw_msg[] = {
 	  "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"};
   SkycoinSignMessage msgSign = SkycoinSignMessage_init_zero;
+  SkycoinSignMessage msgSignTemp = SkycoinSignMessage_init_zero;
   strncpy(msgSign.message, raw_msg, sizeof(msgSign.message));
+  strncpy(msgSignTemp.message, raw_msg, sizeof(msgSignTemp.message));
   msgSign.address_n = 0;
-  uint8_t msg_resp_sign[MSG_OUT_SIZE] __attribute__((aligned)) = {0};
-  ResponseSkycoinSignMessage *respSign = (ResponseSkycoinSignMessage *)(void *)msg_resp_sign;
-  msgSkycoinSignMessageImpl(&msgSign, resp);
+  msgSignTemp.address_n = 0;
+  fsm_msgSkycoinSignMessage(&msgSign);
+  ck_assert_mem_ne(&msgSign,&msgSignTemp,sizeof(SkycoinSignMessage));
 }
 END_TEST
 

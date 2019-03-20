@@ -75,7 +75,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 		GenerateMnemonic* msg,
 		void (*random_buffer_func)(uint8_t *buf, size_t len));
 ErrCode_t msgEntropyAckImpl(EntropyAck* msg);
-void fsm_msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
+void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
 							ResponseSkycoinSignMessage *msg_resp);
 ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, 
 										char* signed_message);
@@ -83,5 +83,5 @@ ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp);
 void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp);
 void msgApplySettings(ApplySettings *msg);
 void msgGetFeaturesImpl(Features *resp);
-void msgSkycoinSignMessage(SkycoinSignMessage *msg);
+void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg);
 #endif  // __TINYFIRMWARE_FIRMWARE_FSMIMPL_H__

@@ -281,9 +281,9 @@ void msgGetFeaturesImpl(Features *resp)
 	resp->has_model = true; strlcpy(resp->model, "1", sizeof(resp->model));
 }
 
-void msgSkycoinSignMessage(SkycoinSignMessage *msg)
+void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
 {
-	(void)msg;
+	memset(msg,0,sizeof(SkycoinSignMessage));
 	fsm_sendFailure(ErrNotImplemented, "Not Implemented");
 	return;
 }
