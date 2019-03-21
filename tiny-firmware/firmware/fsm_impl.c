@@ -54,6 +54,14 @@ extern uint8_t  int_entropy[INTERNAL_ENTROPY_SIZE];
 static bool has_passphrase_protection;
 static bool passphrase_protection;
 
+ErrCode_t msgNotImplementedImpl(void *msg, size_t msg_sz, void *resp, size_t resp_sz) {
+	memset(msg, 0, msg_sz);
+	memset(resp, 0, resp_sz);
+	fsm_sendFailure(FailureType_Failure_UnexpectedMessage, "Feature removed temporarily");
+	layoutHome();
+	return ErrOk;
+}
+
 ErrCode_t msgEntropyAckImpl(EntropyAck* msg) {
 	_Static_assert(EXTERNAL_ENTROPY_MAX_SIZE == sizeof(msg->entropy.bytes),
 					"External entropy size does not match.");
@@ -114,13 +122,39 @@ ErrCode_t msgGenerateMnemonicImpl(
 	return ErrInvalidValue;
 }
 
-void msgSkycoinSignMessageImpl(SkycoinSignMessage *msg,
-							   ResponseSkycoinSignMessage *resp)
-{
-	memset(msg, 0, sizeof(SkycoinSignMessage));
-	memset(resp, 0, sizeof(ResponseSkycoinSignMessage));
-	fsm_sendFailure(ErrNotImplemented, "Not implement");
+ErrCode_t msgSkycoinSignMessageImplFull(SkycoinSignMessage *msg, ResponseSkycoinSignMessage *resp) {
+	if (storage_hasMnemonic() == false) {
+		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
+		return ErrSignPreconditionFailed;
+	}
+	CHECK_PIN_UNCACHED
+	uint8_t pubkey[33] = {0};
+	uint8_t seckey[32] = {0};
+	fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
+	uint8_t digest[32] = {0};
+	if (is_digest(msg->message) == false) {
+		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
+	} else {
+		writebuf_fromhexstr(msg->message, digest);
+	}
+	uint8_t signature[65];
+	int res = ecdsa_skycoin_sign(random32(), seckey, digest, signature);
+	if (res == 0) {
+		layoutRawMessage("Signature success");
+	} else {
+		layoutRawMessage("Signature failed");
+	}
+	const size_t hex_len = 2 * sizeof(signature);
+	char signature_in_hex[hex_len];
+	tohex(signature_in_hex, signature, sizeof(signature));
+	memcpy(resp->signed_message, signature_in_hex, hex_len);
+	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
 	layoutHome();
+	return ErrOk;
+}
+
+ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage *msg, ResponseSkycoinSignMessage *resp) {
+	return msgNotImplementedImpl(msg, sizeof(SkycoinSignMessage), resp, sizeof(ResponseSkycoinSignMessage));
 }
 
 ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, char* signed_message) {
@@ -172,7 +206,7 @@ ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp)
 	return ErrOk;
 }
 
-void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp)
+ErrCode_t msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp)
 {
 	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
 	// /2 because the hex to buff conversion.
@@ -201,9 +235,10 @@ void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success 
 	memcpy(resp->message, pubkeybase58, pubkeybase58_size);
 	resp->has_message = true;
 	msg_write(MessageType_MessageType_Success, resp);
+	return ErrOk;
 }
 
-void msgApplySettings(ApplySettings *msg)
+ErrCode_t msgApplySettings(ApplySettings *msg)
 {
 	_Static_assert(
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
@@ -230,9 +265,10 @@ void msgApplySettings(ApplySettings *msg)
 		storage_setHomescreen(msg->homescreen.bytes, msg->homescreen.size);
 	}
 	storage_update();
+	return ErrOk;
 }
 
-void msgGetFeaturesImpl(Features *resp)
+ErrCode_t msgGetFeaturesImpl(Features *resp)
 {
 	resp->has_vendor = true;         strlcpy(resp->vendor, "Skycoin Foundation", sizeof(resp->vendor));
 	resp->has_fw_major = true;  resp->fw_major = VERSION_MAJOR;
@@ -255,5 +291,6 @@ void msgGetFeaturesImpl(Features *resp)
 	resp->has_passphrase_cached = true; resp->passphrase_cached = session_isPassphraseCached();
 	resp->has_needs_backup = true; resp->needs_backup = storage_needsBackup();
 	resp->has_model = true; strlcpy(resp->model, "1", sizeof(resp->model));
+	return ErrOk;
 }
 

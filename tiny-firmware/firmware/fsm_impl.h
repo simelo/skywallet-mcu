@@ -49,39 +49,37 @@
 #define CHECK_PIN \
 	if (!protectPin(true)) { \
 		layoutHome(); \
-		return; \
+		return ErrPinRequired; \
 	}
 
 #define CHECK_PIN_RET_ERR_CODE \
 	if (!protectPin(true)) { \
 		layoutHome(); \
-		return ErrFailed; \
+		return ErrPinRequired; \
 	}
 
 #define CHECK_PIN_UNCACHED \
 	if (!protectPin(false)) { \
 		layoutHome(); \
-		return; \
+		return ErrPinRequired; \
 	}
 
 #define CHECK_PARAM(cond, errormsg) \
 	if (!(cond)) { \
 		fsm_sendFailure(FailureType_Failure_DataError, (errormsg)); \
 		layoutHome(); \
-		return; \
+		return ErrInvalidArg; \
 	}
 
 ErrCode_t msgGenerateMnemonicImpl(
 		GenerateMnemonic* msg,
 		void (*random_buffer_func)(uint8_t *buf, size_t len));
 ErrCode_t msgEntropyAckImpl(EntropyAck* msg);
-void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
-							ResponseSkycoinSignMessage *msg_resp);
-ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, 
-										char* signed_message);
+ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage *msg_resp);
+ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, char* signed_message);
 ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp);
-void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp);
-void msgApplySettings(ApplySettings *msg);
-void msgGetFeaturesImpl(Features *resp);
+ErrCode_t msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp);
+ErrCode_t msgApplySettings(ApplySettings *msg);
+ErrCode_t msgGetFeaturesImpl(Features *resp);
 
 #endif  // __TINYFIRMWARE_FIRMWARE_FSMIMPL_H__
