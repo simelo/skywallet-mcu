@@ -114,36 +114,12 @@ ErrCode_t msgGenerateMnemonicImpl(
 	return ErrInvalidValue;
 }
 
-
-void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
-								   ResponseSkycoinSignMessage *resp)
+void msgSkycoinSignMessageImpl(SkycoinSignMessage *msg,
+							   ResponseSkycoinSignMessage *resp)
 {
-	if (storage_hasMnemonic() == false) {
-		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
-		return;
-	}
-	CHECK_PIN_UNCACHED
-	uint8_t pubkey[33] = {0};
-	uint8_t seckey[32] = {0};
-	fsm_getKeyPairAtIndex(1, pubkey, seckey, NULL, msg->address_n);
-	uint8_t digest[32] = {0};
-	if (is_digest(msg->message) == false) {
-		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
-	} else {
-		writebuf_fromhexstr(msg->message, digest);
-	}
-	uint8_t signature[65];
-	int res = ecdsa_skycoin_sign(random32(), seckey, digest, signature);
-	if (res == 0) {
-		layoutRawMessage("Signature success");
-	} else {
-		layoutRawMessage("Signature failed");
-	}
-	const size_t hex_len = 2 * sizeof(signature);
-	char signature_in_hex[hex_len];
-	tohex(signature_in_hex, signature, sizeof(signature));
-	memcpy(resp->signed_message, signature_in_hex, hex_len);
-	msg_write(MessageType_MessageType_ResponseSkycoinSignMessage, resp);
+	memset(msg, 0, sizeof(SkycoinSignMessage));
+	memset(resp, 0, sizeof(ResponseSkycoinSignMessage));
+	fsm_sendFailure(ErrNotImplemented, "Not implement");
 	layoutHome();
 }
 
@@ -281,9 +257,3 @@ void msgGetFeaturesImpl(Features *resp)
 	resp->has_model = true; strlcpy(resp->model, "1", sizeof(resp->model));
 }
 
-void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
-{
-	memset(msg,0,sizeof(SkycoinSignMessage));
-	fsm_sendFailure(ErrNotImplemented, "Not Implemented");
-	return;
-}

@@ -83,5 +83,5 @@ ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp);
 void msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp);
 void msgApplySettings(ApplySettings *msg);
 void msgGetFeaturesImpl(Features *resp);
-void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg);
+
 #endif  // __TINYFIRMWARE_FIRMWARE_FSMIMPL_H__

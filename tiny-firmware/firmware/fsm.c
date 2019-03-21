@@ -354,7 +354,11 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 	layoutHome();
 }
 
-
+void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
+{
+	RESP_INIT(ResponseSkycoinSignMessage);
+	msgSkycoinSignMessageImpl(msg, resp);
+}
 
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 {

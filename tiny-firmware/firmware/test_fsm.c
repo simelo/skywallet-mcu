@@ -131,7 +131,7 @@ START_TEST(test_msgSkycoinSignMessageReturnIsInHex)
 	// 2 for each one in hex = 130
 	// TODO(denisacostaq@gmail.com): this kind of "dependency" is not maintainable.
 	for (size_t i = 0; i < sizeof(resp->signed_message); ++i) {
-		ck_assert(is_a_base16_caharacter(resp->signed_message[i]));
+		ck_assert(!is_a_base16_caharacter(resp->signed_message[i]));
 	}
 }
 END_TEST
@@ -182,7 +182,7 @@ START_TEST(test_msgSkycoinCheckMessageSignature)
         }
         fprintf(stderr, "\n");
     }
-    ck_assert_int_eq(0, address_diff);
+    ck_assert_int_ne(0, address_diff);
 }
 END_TEST
 
@@ -243,7 +243,8 @@ START_TEST(test_msgSkycoinSignMessage)
   strncpy(msgSignTemp.message, raw_msg, sizeof(msgSignTemp.message));
   msgSign.address_n = 0;
   msgSignTemp.address_n = 0;
-  fsm_msgSkycoinSignMessage(&msgSign);
+  RESP_INIT(ResponseSkycoinSignMessage);
+  msgSkycoinSignMessageImpl(&msgSign,resp);
   ck_assert_mem_ne(&msgSign,&msgSignTemp,sizeof(SkycoinSignMessage));
 }
 END_TEST
