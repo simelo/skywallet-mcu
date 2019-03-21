@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Changes to the fsm_msgSkycoinSignMessage method to remove generic signature messages
+
 ### Added
 
 - Enforce setting default device language to English
@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+- Disable signing of generic messages.
 - Installation instructions for `protobuf` related tools, use this from `hardware-wallet-protob` submodule.
 - Remove support to recover device from words matrix. The only support method is scrambled words.
 - Not possible to enforce BIP-39 wordlist during recovery process.
