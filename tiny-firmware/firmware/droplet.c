@@ -1,69 +1,65 @@
 
 #include "droplet.h"
 #include <stdio.h>
+#include <inttypes.h>
+
+size_t digitsOf(uint64_t n) {
+
+  size_t cant = 0;
+
+  do {
+    n = n / 10;
+    ++cant;
+  } while( n > 0 );
+
+  return cant;
+
+}
 
 char *sprint_coins(uint64_t coins, int precision_exp, size_t sz, char *msg) {
-  uint64_t div, mod;
-  char* eos = msg + sz;
-  char* ptr = eos;
-  // EOS
+  char *ptr = msg + sz;
   *ptr = 0;
-  --sz;
-  // Trivial case handled differently for performance
-  if (coins == 0) {
-    if (sz > 0) {
-      *(--ptr) = '0';
-      return ptr;
-    }
+  ptr--;
+
+  uint64_t div, mod;
+
+  div = coins / 1000000;
+  mod = coins % 1000000;
+
+  /// Skip least significant decimal digits
+  while ( mod && mod % 10 == 0 ) {
+    mod = mod / 10;
+    --precision_exp;
+  }
+
+  /// Check if the length of the coins to display, fit into it
+  if ( digitsOf(div) + digitsOf(mod) + (( mod != 0 ) ? 1 : 0) > sz ) {
     return NULL;
   }
-  // Skip least significant decimal digits
-  for (--ptr, div = coins, mod = 0; mod == 0 && precision_exp > 0; --precision_exp) {
-    mod = div % 10;
-    div = div / 10;
-  }
-  if (precision_exp > 0) {
-    *ptr = '0' + mod;
-    --ptr;
-    if ((--sz) <= 0) {
-      return NULL;
-    }
-  }
-  // Print decimal digits
-  for (; div > 0 && precision_exp > 0 && sz > 0; --precision_exp, --sz, --ptr) {
-    mod = div % 10;
-    div = div / 10;
-    *ptr = '0' + mod;
-  }
-  for (; precision_exp > 0 && sz > 0; --precision_exp, --sz, --ptr) {
-    *ptr = '0';
-  }
-  if (sz <= 0) {
-    // No space left in buffer
-    return NULL;
-  }
-  if (*(ptr + 1) != 0) {
-    // Not an integer value
-    *ptr = '.';
-    if ((--sz) <= 0) {
-      return NULL;
-    }
-    --ptr;
-  }
-  // A fraction of 1 SKY
-  if (div == 0) {
+
+  /// Trivial case!!
+  if ( div == 0 && mod == 0 ) {
     *ptr = '0';
     return ptr;
   }
+
+  /// Print decimal digits
+  if ( mod != 0 ) {
+    for ( ;precision_exp > 0; ptr--, precision_exp--) {
+      *ptr = '0' + (mod % 10);
+      mod = mod / 10;
+    }
+    *ptr = '.';
+    ptr--;
+  }
+
   // Print integer part
-  for (; div > 0 && sz > 0; --sz, --ptr) {
-    mod = div % 10;
+  do {
+    *ptr = '0' + (div % 10);
     div = div / 10;
-    *ptr = '0' + mod;
-  }
-  if (div > 0) {
-    // No space left in buffer
-    return NULL;
-  }
+    ptr--;
+  } while( div > 0 );
+
   return ++ptr;
+
 }
