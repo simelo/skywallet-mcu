@@ -78,7 +78,10 @@ ErrCode_t msgEntropyAckImpl(EntropyAck* msg);
 ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage *msg_resp);
 ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, char* signed_message);
 ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp);
-ErrCode_t msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg, Success *resp);
+ErrCode_t msgSkycoinCheckMessageSignatureImpl(
+		SkycoinCheckMessageSignature* msg,
+		Success *successResp,
+		Failure *failureResp);
 ErrCode_t msgApplySettings(ApplySettings *msg);
 ErrCode_t msgGetFeaturesImpl(Features *resp);
 

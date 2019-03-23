@@ -49,20 +49,6 @@
 
 extern uint8_t msg_resp[MSG_OUT_SIZE] __attribute__ ((aligned));
 
-void verifyLanguage(char *lang) {
-	int len = strlen(lang);
-	int spaces = 0, i;
-	for (i = 0; i < len; ++i) {
-		if ( ('a' <= lang[i] && lang[i] <= 'z') || ('A' <= lang[i] && lang[i] <= 'Z') ) {
-			break;
-		}
-		++spaces;
-	}
-	if ( spaces == len ) {
-		strcpy(lang, "English");
-	}
-}
-
 void fsm_sendSuccess(const char *text)
 {
 	RESP_INIT(Success);
@@ -165,15 +151,18 @@ void fsm_msgApplySettings(ApplySettings *msg)
 			layoutHome();
 			return;
 		}
+	} else {
+		msg->has_label = false;
 	}
-	if (msg->has_language && strlen(msg->label)) {
-		verifyLanguage(msg->language);
+	if (msg->has_language && strlen(msg->language)) {
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change language to"), msg->language, "?", NULL, NULL);
 		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
 			return;
 		}
+	} else {
+		msg->has_language = false;
 	}
 	if (msg->has_use_passphrase) {
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), msg->use_passphrase ? _("enable passphrase") : _("disable passphrase"), _("protection?"), NULL, NULL, NULL);
@@ -206,8 +195,15 @@ void fsm_msgGetFeatures(GetFeatures *msg)
 
 void fsm_msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg)
 {
-	RESP_INIT(Success);
-	msgSkycoinCheckMessageSignature(msg, resp);
+	GET_MSG_POINTER(Success, successResp);
+	GET_MSG_POINTER(Failure, failureResp);
+	if (msgSkycoinCheckMessageSignatureImpl(msg, successResp, failureResp)
+			== ErrOk) {
+		msg_write(MessageType_MessageType_Success, successResp);
+	} else {
+		failureResp->code = FailureType_Failure_InvalidSignature;
+		msg_write(MessageType_MessageType_Failure, failureResp);
+	}
 	layoutHome();
 }
 
@@ -477,7 +473,7 @@ void fsm_msgGenerateMnemonic(GenerateMnemonic* msg) {
 						_("Device could not generate a valid Mnemonic"));
 			break;
 		default:
-			fsm_sendFailure(FailureType_Failure_FirmwareError, 
+			fsm_sendFailure(FailureType_Failure_FirmwareError,
 							_("Mnemonic generation failed"));
 			break;
 	}
@@ -652,11 +648,11 @@ void fsm_msgEntropyAck(EntropyAck *msg)
 						_("Device could not generate a valid Mnemonic"));
 			break;
 		case ErrUnexpectedMessage:
-			fsm_sendFailure(FailureType_Failure_UnexpectedMessage, 
+			fsm_sendFailure(FailureType_Failure_UnexpectedMessage,
 							_("Unexpected entropy ack msg."));
 			break;
 		default:
-			fsm_sendFailure(FailureType_Failure_UnexpectedMessage, 
+			fsm_sendFailure(FailureType_Failure_UnexpectedMessage,
 							_("Entropy ack failed."));
 	}
 	layoutHome();
