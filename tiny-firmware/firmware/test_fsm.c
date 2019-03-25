@@ -354,6 +354,20 @@ START_TEST(test_msgGetFeatures)
 }
 END_TEST
 
+START_TEST(test_msgApplySettingsValidateParameter)
+{
+    storage_wipe();
+    char raw_label[] = {
+        "my custom device label"};
+    ApplySettings msg = ApplySettings_init_zero;
+    msg.use_passphrase = NULL;
+    strncpy(msg.label, raw_label, sizeof(msg.label));
+    msgApplySettings(&msg);
+    ck_assert_int_eq(storage_hasLabel(), true);
+    ck_assert(sizeof(msg.use_passphrase)== sizeof(bool));
+}
+END_TEST
+
 // define test cases
 TCase *add_fsm_tests(TCase *tc)
 {
@@ -378,5 +392,6 @@ TCase *add_fsm_tests(TCase *tc)
 		tc, 
 		test_msgEntropyAckImplFailAsExpectedForSyncProblemInProtocol);
 	tcase_add_test(tc, test_msgGenerateMnemonicEntropyAckSequenceShouldBeOk);
-	return tc;
+    tcase_add_test(tc, test_msgApplySettingsValidateParameter);
+    return tc;
 }
