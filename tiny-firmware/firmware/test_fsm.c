@@ -364,7 +364,16 @@ START_TEST(test_msgApplySettingsValidateParameter)
     strncpy(msg.label, raw_label, sizeof(msg.label));
     msgApplySettings(&msg);
     ck_assert_int_eq(storage_hasLabel(), true);
-    ck_assert(sizeof(msg.use_passphrase)== sizeof(bool));
+    ck_assert(!storage_hasPassphraseProtection());
+}
+END_TEST
+
+START_TEST(test_msgGenerateMnemonicImplCheckParameter)
+{
+    storage_wipe();
+    GenerateMnemonic msg = {true, NULL, 0, 12};
+    ErrCode_t ret = msgGenerateMnemonicImpl(&msg, &random_buffer);
+    ck_assert_int_eq(ErrOk, ret);
 }
 END_TEST
 
@@ -393,5 +402,6 @@ TCase *add_fsm_tests(TCase *tc)
 		test_msgEntropyAckImplFailAsExpectedForSyncProblemInProtocol);
 	tcase_add_test(tc, test_msgGenerateMnemonicEntropyAckSequenceShouldBeOk);
     tcase_add_test(tc, test_msgApplySettingsValidateParameter);
+    tcase_add_test(tc, test_msgGenerateMnemonicImplCheckParameter);
     return tc;
 }

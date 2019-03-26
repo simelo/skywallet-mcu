@@ -79,16 +79,18 @@ ErrCode_t msgGenerateMnemonicImpl(
 		void (*random_buffer_func)(uint8_t *buf, size_t len)) {
 	CHECK_NOT_INITIALIZED_RET_ERR_CODE
 	strength = MNEMONIC_STRENGTH_12;
-	if (msg->has_word_count) {
-		switch (msg->word_count) {
-			case MNEMONIC_WORD_COUNT_12:
-				strength = MNEMONIC_STRENGTH_12;
-				break;
-			case MNEMONIC_WORD_COUNT_24:
-				strength = MNEMONIC_STRENGTH_24;
-				break;
-			default:
-				return ErrInvalidArg;
+	if (msg->has_word_count)
+	{
+		switch (msg->word_count)
+		{
+		case MNEMONIC_WORD_COUNT_12:
+			strength = MNEMONIC_STRENGTH_12;
+			break;
+		case MNEMONIC_WORD_COUNT_24:
+			strength = MNEMONIC_STRENGTH_24;
+			break;
+		default:
+			return ErrInvalidArg;
 		}
 	}
 	random_buffer_func(int_entropy, sizeof(int_entropy));
@@ -96,7 +98,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 		awaiting_entropy = true;
 		if (msg->has_passphrase_protection) {
 			has_passphrase_protection = msg->has_passphrase_protection;
-			passphrase_protection = msg->passphrase_protection;
+			passphrase_protection = (bool)msg->passphrase_protection;
 		}
 		return ErrLowEntropy;
 	}
@@ -106,7 +108,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 		storage_setNeedsBackup(true);
 		storage_setPassphraseProtection(
 					msg->has_passphrase_protection
-					&& msg->passphrase_protection);
+					&& (bool)msg->passphrase_protection);
 		memset(int_entropy, 0, sizeof(int_entropy));
 		storage_update();
 		return ErrOk;
@@ -252,7 +254,6 @@ void msgApplySettings(ApplySettings *msg)
 	CHECK_PARAM(msg->has_label || msg->has_language || msg->has_use_passphrase || msg->has_homescreen,
 				_("No setting provided"));
 	
-	CHECK_PARAM(msg->use_passphrase == true || msg->use_passphrase==false,_("No use_passphrase is bool"));
 	if (msg->has_label) {
 		storage_setLabel(msg->label);
 	} else {
@@ -267,7 +268,7 @@ void msgApplySettings(ApplySettings *msg)
 		storage_setLanguage(msg->language);
 	}
 	if (msg->has_use_passphrase) {
-		storage_setPassphraseProtection(msg->use_passphrase);
+		storage_setPassphraseProtection((bool)msg->use_passphrase);
 	}
 	if (msg->has_homescreen) {
 		storage_setHomescreen(msg->homescreen.bytes, msg->homescreen.size);
