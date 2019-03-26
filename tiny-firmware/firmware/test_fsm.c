@@ -264,6 +264,7 @@ START_TEST(test_msgSkycoinCheckMessageSignatureFailedAsExpectedForInvalidMessage
     forceGenerateMnemonic();
     SkycoinAddress msgSkyAddress = SkycoinAddress_init_zero;
     msgSkyAddress.address_n = 1;
+    msgSkyAddress.confirm_address = NULL;
     uint8_t msg_resp_addr[MSG_OUT_SIZE] __attribute__ ((aligned)) = {0};
     ResponseSkycoinAddress *respAddress = 
             (ResponseSkycoinAddress *) (void *) msg_resp_addr;

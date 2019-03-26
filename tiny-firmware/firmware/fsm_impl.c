@@ -120,6 +120,8 @@ ErrCode_t msgGenerateMnemonicImpl(
 void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
 								   ResponseSkycoinSignMessage *resp)
 {
+	_Static_assert(131 == sizeof(msg->message),
+				   "Message size does not match.");
 	if (storage_hasMnemonic() == false) {
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
 		return;
@@ -186,7 +188,7 @@ ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp)
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Key pair generation failed");
 		return ErrFailed;
 	}
-	if (msg->address_n == 1 && msg->has_confirm_address && msg->confirm_address) {
+	if (msg->address_n == 1 && msg->has_confirm_address && (bool)msg->confirm_address) {
 		char * addr = resp->addresses[0];
 		layoutAddress(addr);
 		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
@@ -202,17 +204,25 @@ ErrCode_t msgSkycoinCheckMessageSignatureImpl(
 		SkycoinCheckMessageSignature* msg,
 		Success *successResp,
 		Failure *failureResp) {
+
+	_Static_assert(66 == sizeof(msg->message),
+				   "Message size does not match.");
+    _Static_assert(37 == sizeof(msg->address),
+                       "Address size does not match.");
+	_Static_assert(131 == sizeof(msg->signature),
+				   "Signature size does not match.");
 	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-	// /2 because the hex to buff conversion.
-	uint8_t sign[(sizeof(msg->signature) - 1)/2];
-	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-	char pubkeybase58[sizeof(msg->address)] = {0};
-	uint8_t pubkey[33] = {0};
-	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-	// /2 because the hex to buff conversion.
-	uint8_t digest[(sizeof(msg->message) - 1) / 2] = {0};
-	if (is_digest(msg->message) == false) {
-		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
+    // /2 because the hex to buff conversion.
+    uint8_t sign[(sizeof(msg->signature) - 1) / 2];
+    // NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
+    char pubkeybase58[sizeof(msg->address)] = {0};
+    uint8_t pubkey[33] = {0};
+    // NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
+    // /2 because the hex to buff conversion.
+    uint8_t digest[(sizeof(msg->message) - 1) / 2] = {0};
+    if (is_digest(msg->message) == false) {
+      compute_sha256sum((const uint8_t *)msg->message, digest,
+                        strlen(msg->message));
 	} else {
 		tobuff(msg->message, digest, MIN(sizeof(digest), sizeof(msg->message)));
 	}

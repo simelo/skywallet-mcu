@@ -124,7 +124,9 @@ void fsm_sendFailure(FailureType code, const char *text)
 
 void fsm_msgInitialize(Initialize *msg)
 {
-    recovery_abort();
+	_Static_assert(64 == sizeof(msg->state.bytes),
+				   "State size does not match.");
+	recovery_abort();
 	if (msg && msg->has_state && msg->state.size == 64) {
 		uint8_t i_state[64];
 		if (!session_getState(msg->state.bytes, i_state, NULL)) {
@@ -165,7 +167,7 @@ void fsm_msgApplySettings(ApplySettings *msg)
 		msg->has_language = false;
 	}
 	if (msg->has_use_passphrase) {
-		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), msg->use_passphrase ? _("enable passphrase") : _("disable passphrase"), _("protection?"), NULL, NULL, NULL);
+		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), (bool)msg->use_passphrase ? _("enable passphrase") : _("disable passphrase"), _("protection?"), NULL, NULL, NULL);
 		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			layoutHome();
@@ -378,11 +380,11 @@ void fsm_msgPing(Ping *msg)
 		}
 	}
 
-	if (msg->has_pin_protection && msg->pin_protection) {
+	if (msg->has_pin_protection && (bool)msg->pin_protection) {
 		CHECK_PIN
 	}
 
-	if (msg->has_passphrase_protection && msg->passphrase_protection) {
+	if (msg->has_passphrase_protection && (bool)msg->passphrase_protection) {
 		if (!protectPassphrase()) {
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
 			return;
@@ -399,7 +401,7 @@ void fsm_msgPing(Ping *msg)
 
 void fsm_msgChangePin(ChangePin *msg)
 {
-	bool removal = msg->has_remove && msg->remove;
+	bool removal = msg->has_remove && (bool)msg->remove;
 	if (removal) {
 		if (storage_hasPin()) {
 			layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("remove current PIN?"), NULL, NULL, NULL, NULL);
@@ -534,7 +536,7 @@ void fsm_msgLoadDevice(LoadDevice *msg)
 		return;
 	}
 
-	if (msg->has_mnemonic && !(msg->has_skip_checksum && msg->skip_checksum) ) {
+	if (msg->has_mnemonic && !(msg->has_skip_checksum && (bool)msg->skip_checksum) ) {
 		if (!mnemonic_check(msg->mnemonic)) {
 			fsm_sendFailure(FailureType_Failure_DataError, _("Mnemonic with wrong checksum provided"));
 			layoutHome();
@@ -556,11 +558,11 @@ void fsm_msgResetDevice(ResetDevice *msg)
 	reset_init(
 		msg->has_display_random && msg->display_random,
 		msg->has_strength ? msg->strength : 128,
-		msg->has_passphrase_protection && msg->passphrase_protection,
-		msg->has_pin_protection && msg->pin_protection,
+		msg->has_passphrase_protection && (bool)msg->passphrase_protection,
+		msg->has_pin_protection && (bool)msg->pin_protection,
 		msg->has_language ? msg->language : 0,
 		msg->has_label ? msg->label : 0,
-		msg->has_skip_backup ? msg->skip_backup : false
+		msg->has_skip_backup ? (bool)msg->skip_backup : false
 	);
 }
 
@@ -616,8 +618,8 @@ void fsm_msgRecoveryDevice(RecoveryDevice *msg)
 	}
 	recovery_init(
 		msg->has_word_count ? msg->word_count : 12,
-		msg->has_passphrase_protection && msg->passphrase_protection,
-		msg->has_pin_protection && msg->pin_protection,
+		msg->has_passphrase_protection && (bool)msg->passphrase_protection,
+		msg->has_pin_protection && (bool)msg->pin_protection,
 		msg->has_language ? msg->language : 0,
 		msg->has_label ? msg->label : 0,
 		dry_run
