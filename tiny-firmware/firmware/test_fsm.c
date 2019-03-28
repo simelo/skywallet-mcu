@@ -360,12 +360,53 @@ START_TEST(test_msgApplySettingsValidateParameter)
     storage_wipe();
     char raw_label[] = {
         "my custom device label"};
+    // Validate has_label is false
     ApplySettings msg = ApplySettings_init_zero;
-    msg.use_passphrase = NULL;
     strncpy(msg.label, raw_label, sizeof(msg.label));
+    msg.has_label = false;
     msgApplySettings(&msg);
     ck_assert_int_eq(storage_hasLabel(), true);
+    ck_assert_str_ne(storage_getLabel(),raw_label);
+
+    //msg.has_label is true
+    strncpy(msg.label, raw_label, sizeof(msg.label));
+    msg.has_label = true;
+    msgApplySettings(&msg);
+    ck_assert_int_eq(storage_hasLabel(), true);
+    ck_assert_str_eq(storage_getLabel(), raw_label);
+
+    //msg.has_language value default
+
+    // has_language == false
+    ck_assert_int_eq(msg.has_language, false);
+    ck_assert_str_eq(msg.language, "");
+
+    // has_language is true
+    msg.has_language = true;
+    strcpy(msg.language, "english");
+    msgApplySettings(&msg);
+    ck_assert_str_eq(storage_getLanguage(), "english");
+
+    // Validate use_passphrase is NULL or false
+    msg.use_passphrase = NULL;
+    msgApplySettings(&msg);
     ck_assert(!storage_hasPassphraseProtection());
+
+    msg.use_passphrase = false;
+    msgApplySettings(&msg);
+    ck_assert(!storage_hasPassphraseProtection());
+
+    // Validate use_passphrase is false and has_use_passphrase is true
+    msg.use_passphrase = false;
+    msg.has_use_passphrase = true;
+    msgApplySettings(&msg);
+    ck_assert(!storage_hasPassphraseProtection());
+
+    // Validate use_passphrase is true
+    msg.use_passphrase = true;
+    msg.has_use_passphrase = true;
+    msgApplySettings(&msg);
+    ck_assert(storage_hasPassphraseProtection());
 }
 END_TEST
 
