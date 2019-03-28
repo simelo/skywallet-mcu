@@ -18,6 +18,7 @@
 #define EXTERNAL_ENTROPY_MAX_SIZE 128
 #define MNEMONIC_WORD_COUNT_12 12
 #define MNEMONIC_WORD_COUNT_24 24
+#define DEFAULT_LANGUAGE "english"
 
 // message methods
 

@@ -261,9 +261,9 @@ void msgApplySettings(ApplySettings *msg)
 	_Static_assert(
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
 		"device label size inconsitent betwen protocol and final storage");
-	CHECK_PARAM(msg->has_label || msg->has_language || msg->has_use_passphrase || msg->has_homescreen,
-				_("No setting provided"));
-	
+	CHECK_PARAM(msg->has_label || msg->has_use_passphrase || msg->has_homescreen,
+							_("No setting provided"));
+
 	if (msg->has_label) {
 		storage_setLabel(msg->label);
 	} else {
@@ -276,6 +276,8 @@ void msgApplySettings(ApplySettings *msg)
 	}
 	if (msg->has_language) {
 		storage_setLanguage(msg->language);
+	}else{
+		storage_setLanguage(DEFAULT_LANGUAGE);
 	}
 	if (msg->has_use_passphrase) {
 		storage_setPassphraseProtection((bool)msg->use_passphrase);
