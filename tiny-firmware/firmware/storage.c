@@ -440,10 +440,12 @@ void storage_setLanguage(const char *lang)
 {
 	if (!lang) return;
 	// sanity check
-	if (strcmp(lang, "english") == 0) {
-		storageUpdate.has_language = true;
+	storageUpdate.has_language = true;
+	if (strcmp(lang, "english") == 0){
 		strlcpy(storageUpdate.language, lang, sizeof(storageUpdate.language));
-	}
+	}else{
+          strlcpy(storageUpdate.language, "english", sizeof(storageUpdate.language));
+    }
 }
 
 void storage_setPassphraseProtection(bool passphrase_protection)
