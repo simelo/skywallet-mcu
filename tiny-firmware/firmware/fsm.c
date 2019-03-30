@@ -392,7 +392,7 @@ void fsm_msgPing(Ping *msg)
 	}
 
 	if (msg->has_message) {
-		if (msg->message == NULL)
+		if (msg->message == "")
 		{
 			fsm_sendFailure(FailureType_Failure_DataError, "Message in empty");
 			return;
