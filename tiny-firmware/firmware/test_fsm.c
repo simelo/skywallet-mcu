@@ -443,6 +443,55 @@ START_TEST(test_msgGenerateMnemonicImplCheckParameter)
 }
 END_TEST
 
+START_TEST(test_msgSkycoinAddressCheckParameter)
+{
+  // Only send address_n
+  RESP_INIT(ResponseSkycoinAddress)
+  storage_wipe();
+  SkycoinAddress msg;
+  msg.address_n = 10;
+  ErrCode_t err = msgSkycoinAddress(&msg, resp);
+  ck_assert_int_eq(err, ErrFailed);
+
+  // Only send confirm_address
+  storage_wipe();
+  memset(&msg, 0, sizeof(SkycoinAddress));
+  memset(resp, 0, sizeof(ResponseSkycoinAddress));
+  msg.confirm_address = true;
+  err = msgSkycoinAddress(&msg, resp);
+  ck_assert_int_eq(err, ErrFailed);
+
+  // Only send start_index
+  storage_wipe();
+  memset(&msg, 0, sizeof(SkycoinAddress));
+  memset(resp, 0, sizeof(ResponseSkycoinAddress));
+  msg.start_index = 0;
+  err = msgSkycoinAddress(&msg, resp);
+  ck_assert_int_eq(err, ErrFailed);
+
+  // Send start_index and address_n
+  storage_wipe();
+  memset(&msg, 0, sizeof(SkycoinAddress));
+  memset(resp, 0, sizeof(ResponseSkycoinAddress));
+  msg.start_index = 0;
+  msg.address_n = 2;
+  err = msgSkycoinAddress(&msg, resp);
+  ck_assert_int_eq(err, ErrFailed);
+
+  // Send start_index , address_n  && confirm_address
+  storage_wipe();
+  forceGenerateMnemonic();
+  memset(&msg, 0, sizeof(SkycoinAddress));
+  memset(resp, 0, sizeof(ResponseSkycoinAddress));
+  msg.start_index = 0;
+  msg.address_n = 2;
+  msg.confirm_address = false;
+  err = msgSkycoinAddress(&msg, resp);
+  ck_assert_int_eq(err, ErrOk);
+  ck_assert_int_eq(msg.address_n,resp->addresses_count);
+}
+END_TEST
+
 // define test cases
 TCase *add_fsm_tests(TCase *tc)
 {
@@ -470,5 +519,6 @@ TCase *add_fsm_tests(TCase *tc)
 	tcase_add_test(tc, test_msgGenerateMnemonicEntropyAckSequenceShouldBeOk);
     tcase_add_test(tc, test_msgApplySettingsValidateParameter);
     tcase_add_test(tc, test_msgGenerateMnemonicImplCheckParameter);
+    tcase_add_test(tc, test_msgSkycoinAddressCheckParameter);
     return tc;
 }

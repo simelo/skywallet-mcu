@@ -370,8 +370,8 @@ void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 void fsm_msgPing(Ping *msg)
 {
 	RESP_INIT(Success);
-
-	if (msg->has_button_protection && msg->button_protection) {
+	
+		if (msg->has_button_protection && msg->button_protection) {
 		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("answer to ping?"), NULL, NULL, NULL, NULL);
 		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
 			fsm_sendFailure(FailureType_Failure_ActionCancelled, NULL);
@@ -392,6 +392,11 @@ void fsm_msgPing(Ping *msg)
 	}
 
 	if (msg->has_message) {
+		if (msg->message == NULL)
+		{
+			fsm_sendFailure(FailureType_Failure_DataError, "Message in empty");
+			return;
+		}
 		resp->has_message = true;
 		memcpy(&(resp->message), &(msg->message), sizeof(resp->message));
 	}
