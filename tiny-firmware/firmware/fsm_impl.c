@@ -79,18 +79,16 @@ ErrCode_t msgGenerateMnemonicImpl(
 		void (*random_buffer_func)(uint8_t *buf, size_t len)) {
 	CHECK_NOT_INITIALIZED_RET_ERR_CODE
 	strength = MNEMONIC_STRENGTH_12;
-	if (msg->has_word_count)
-	{
-		switch (msg->word_count)
-		{
-		case MNEMONIC_WORD_COUNT_12:
-			strength = MNEMONIC_STRENGTH_12;
-			break;
-		case MNEMONIC_WORD_COUNT_24:
-			strength = MNEMONIC_STRENGTH_24;
-			break;
-		default:
-			return ErrInvalidArg;
+	if (msg->has_word_count) {
+		switch (msg->word_count) {
+			case MNEMONIC_WORD_COUNT_12:
+				strength = MNEMONIC_STRENGTH_12;
+				break;
+			case MNEMONIC_WORD_COUNT_24:
+				strength = MNEMONIC_STRENGTH_24;
+				break;
+			default:
+				return ErrInvalidArg;
 		}
 	}
 	random_buffer_func(int_entropy, sizeof(int_entropy));
@@ -117,8 +115,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 }
 
 
-void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
-								   ResponseSkycoinSignMessage *resp)
+void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage *resp)
 {
 	_Static_assert(131 == sizeof(msg->message),
 				   "Message size does not match.");
@@ -205,24 +202,20 @@ ErrCode_t msgSkycoinCheckMessageSignatureImpl(
 		Success *successResp,
 		Failure *failureResp) {
 
-	_Static_assert(66 == sizeof(msg->message),
-				   "Message size does not match.");
-    _Static_assert(37 == sizeof(msg->address),
-                       "Address size does not match.");
-	_Static_assert(131 == sizeof(msg->signature),
-				   "Signature size does not match.");
+	_Static_assert(66 == sizeof(msg->message), "Message size does not match.");
+	_Static_assert(37 == sizeof(msg->address), "Address size does not match.");
+	_Static_assert(131 == sizeof(msg->signature), "Signature size does not match.");
 	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-    // /2 because the hex to buff conversion.
-    uint8_t sign[(sizeof(msg->signature) - 1) / 2];
-    // NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-    char pubkeybase58[sizeof(msg->address)] = {0};
-    uint8_t pubkey[33] = {0};
-    // NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
-    // /2 because the hex to buff conversion.
-    uint8_t digest[(sizeof(msg->message) - 1) / 2] = {0};
-    if (is_digest(msg->message) == false) {
-      compute_sha256sum((const uint8_t *)msg->message, digest,
-                        strlen(msg->message));
+	// /2 because the hex to buff conversion.
+	uint8_t sign[(sizeof(msg->signature) - 1) / 2];
+	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
+	char pubkeybase58[sizeof(msg->address)] = {0};
+	uint8_t pubkey[33] = {0};
+	// NOTE(denisacostaq@gmail.com): -1 because the end of string ('\0')
+	// /2 because the hex to buff conversion.
+	uint8_t digest[(sizeof(msg->message) - 1) / 2] = {0};
+	if (is_digest(msg->message) == false) {
+		compute_sha256sum((const uint8_t *)msg->message, digest, strlen(msg->message));
 	} else {
 		tobuff(msg->message, digest, MIN(sizeof(digest), sizeof(msg->message)));
 	}
@@ -261,16 +254,13 @@ void msgApplySettings(ApplySettings *msg)
 	_Static_assert(
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
 		"device label size inconsitent betwen protocol and final storage");
-	CHECK_PARAM(msg->has_label || msg->has_use_passphrase || msg->has_homescreen,
-							_("No setting provided"));
+	CHECK_PARAM(msg->has_label || msg->has_use_passphrase || msg->has_homescreen, _("No setting provided"));
 
 	if (msg->has_label) {
 		storage_setLabel(msg->label);
 	}
 	if (msg->has_language) {
 		storage_setLanguage(msg->language);
-	}else{
-		storage_setLanguage(DEFAULT_LANGUAGE);
 	}
 	if (msg->has_use_passphrase) {
 		storage_setPassphraseProtection((bool)msg->use_passphrase);
