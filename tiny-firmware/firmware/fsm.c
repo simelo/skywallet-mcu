@@ -272,7 +272,7 @@ void fsm_msgApplySettings(ApplySettings *msg)
 			return;
 		}
 	}
-	msgApplySettings(msg);
+	msgApplySettingsImpl(msg);
 	fsm_sendSuccess(_("Settings applied"));
 	layoutHome();
 }
@@ -451,7 +451,7 @@ void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 {
 	RESP_INIT(ResponseSkycoinAddress);
-	if (msgSkycoinAddress(msg, resp) == ErrOk) {
+	if (msgSkycoinAddressImpl(msg, resp) == ErrOk) {
 		msg_write(MessageType_MessageType_ResponseSkycoinAddress, resp);
 	}
 	layoutHome();

@@ -163,7 +163,7 @@ ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index,
 	return res;
 }
 
-ErrCode_t msgSkycoinAddress(SkycoinAddress* msg, ResponseSkycoinAddress *resp)
+ErrCode_t msgSkycoinAddressImpl(SkycoinAddress* msg, ResponseSkycoinAddress *resp)
 {
 	uint8_t seckey[32] = {0};
 	uint8_t pubkey[33] = {0};
@@ -243,7 +243,7 @@ ErrCode_t msgSkycoinCheckMessageSignatureImpl(
 	return ret;
 }
 
-void msgApplySettings(ApplySettings *msg)
+void msgApplySettingsImpl(ApplySettings *msg)
 {
 	_Static_assert(
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
