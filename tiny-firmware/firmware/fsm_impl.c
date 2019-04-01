@@ -245,6 +245,19 @@ ErrCode_t msgApplySettingsImpl(ApplySettings *msg) {
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
 		"device label size inconsitent betwen protocol and final storage");
 	CHECK_PARAM_RET_ERR_CODE(msg->has_label || msg->has_language || msg->has_use_passphrase || msg->has_homescreen)
+  msg->has_language = msg->has_language && strlen(msg->language);
+	if (msg->has_language) {
+		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change language to"), msg->language, "?", NULL, NULL);
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+			return ErrActionCancelled;;
+		}
+	}
+	if (msg->has_homescreen) {
+		layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("change the home"), _("screen?"), NULL, NULL, NULL);
+		if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+			return ErrActionCancelled;;
+		}
+	}
 	if (msg->has_label) {
 		storage_setLabel(msg->label);
 	}

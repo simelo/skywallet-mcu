@@ -318,7 +318,7 @@ START_TEST(test_msgApplySettingsLabelShouldNotBeRemovable)
     msg.use_passphrase = false;
     msg.has_label = true;
     strncpy(msg.label, raw_label, sizeof(msg.label));
-    msgApplySettings(&msg);
+    msgApplySettingsImpl(&msg);
     ck_assert(!storage_hasPassphraseProtection());
     ck_assert_int_eq(storage_hasLabel(), true);
     ck_assert_str_eq(storage_getLabel(), raw_label);
@@ -326,7 +326,7 @@ START_TEST(test_msgApplySettingsLabelShouldNotBeRemovable)
     memset(msg.label, 0, sizeof(msg.label));
     msg.has_use_passphrase = true;
     msg.use_passphrase = true;
-    msgApplySettings(&msg);
+    msgApplySettingsImpl(&msg);
     ck_assert_str_eq(storage_getLabel(), raw_label);
     ck_assert(storage_hasPassphraseProtection());
 }
