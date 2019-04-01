@@ -216,7 +216,7 @@ void fsm_sendFailure(FailureType code, const char *text)
 
 void fsm_msgInitialize(Initialize *msg)
 {
-    recovery_abort();
+	recovery_abort();
 	if (msg && msg->has_state && msg->state.size == 64) {
 		uint8_t i_state[64];
 		if (!session_getState(msg->state.bytes, i_state, NULL)) {
@@ -272,8 +272,12 @@ void fsm_msgApplySettings(ApplySettings *msg)
 			return;
 		}
 	}
-	msgApplySettingsImpl(msg);
-	fsm_sendSuccess(_("Settings applied"));
+	ErrCode_t err = msgApplySettingsImpl(msg);
+	char* failMsg = NULL;
+	if (err == ErrInvalidArg) {
+		failMsg = _("No setting provided");
+	}
+	fsm_sendResponseFromErrCode(err, _("Settings applied"), failMsg);
 	layoutHome();
 }
 
@@ -301,14 +305,13 @@ void fsm_msgSkycoinCheckMessageSignature(SkycoinCheckMessageSignature* msg)
 
 int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, ResponseSkycoinAddress* respSkycoinAddress, uint32_t start_index)
 {
-    const char* mnemo = storage_getFullSeed();
-    uint8_t seed[33] = {0};
-    uint8_t nextSeed[SHA256_DIGEST_LENGTH] = {0};
+	const char* mnemo = storage_getFullSeed();
+	uint8_t seed[33] = {0};
+	uint8_t nextSeed[SHA256_DIGEST_LENGTH] = {0};
 	size_t size_address = 36;
-    if (mnemo == NULL || nbAddress == 0)
-    {
-        return -1;
-    }
+	if (mnemo == NULL || nbAddress == 0) {
+		return -1;
+	}
 	generate_deterministic_key_pair_iterator((const uint8_t *)mnemo, strlen(mnemo), nextSeed, seckey, pubkey);
 	if (respSkycoinAddress != NULL && start_index == 0) {
 		generate_base58_address_from_pubkey(pubkey, respSkycoinAddress->addresses[0], &size_address);
@@ -326,16 +329,14 @@ int fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* seckey, 
 			respSkycoinAddress->addresses_count++;
 		}
 	}
-    return 0;
+	return 0;
 }
 
 void fsm_msgTransactionSign(TransactionSign* msg) {
-
 	if (storage_hasMnemonic() == false) {
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
 		return;
 	}
-
 	if (msg->nbIn > 8) {
 		fsm_sendFailure(FailureType_Failure_InvalidSignature, _("Cannot have more than 8 inputs"));
 		return;
@@ -417,11 +418,11 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 	RESP_INIT(ResponseTransactionSign);
 	for (uint32_t i = 0; i < msg->nbIn; ++i) {
 		uint8_t digest[32];
-    	transaction_msgToSign(&transaction, i, digest);
-    	if (msgSignTransactionMessageImpl(digest, msg->transactionIn[i].index, resp->signatures[resp->signatures_count]) != ErrOk) {
+		transaction_msgToSign(&transaction, i, digest);
+		if (msgSignTransactionMessageImpl(digest, msg->transactionIn[i].index, resp->signatures[resp->signatures_count]) != ErrOk) {
 			fsm_sendFailure(FailureType_Failure_InvalidSignature, NULL);
-    		return;
-    	}
+			return;
+		}
 		resp->signatures_count++;
 #if EMULATOR
 		char str[64];
@@ -438,7 +439,7 @@ void fsm_msgTransactionSign(TransactionSign* msg) {
 	printf("Signed message:  %s\n", resp->signatures[0]);
 	printf("Nb signatures: %d\n", resp->signatures_count);
 #endif
-    msg_write(MessageType_MessageType_ResponseTransactionSign, resp);
+	msg_write(MessageType_MessageType_ResponseTransactionSign, resp);
 	layoutHome();
 }
 

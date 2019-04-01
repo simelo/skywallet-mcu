@@ -104,9 +104,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 	if (mnemonic && mnemonic_check(mnemonic)) {
 		storage_setMnemonic(mnemonic);
 		storage_setNeedsBackup(true);
-		storage_setPassphraseProtection(
-					msg->has_passphrase_protection
-					&& msg->passphrase_protection);
+		storage_setPassphraseProtection(msg->has_passphrase_protection && msg->passphrase_protection);
 		memset(int_entropy, 0, sizeof(int_entropy));
 		storage_update();
 		return ErrOk;
@@ -115,8 +113,7 @@ ErrCode_t msgGenerateMnemonicImpl(
 }
 
 
-void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
-								   ResponseSkycoinSignMessage *resp)
+void msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage *resp)
 {
 	if (storage_hasMnemonic() == false) {
 		fsm_sendFailure(FailureType_Failure_AddressGeneration, "Mnemonic not set");
@@ -243,22 +240,13 @@ ErrCode_t msgSkycoinCheckMessageSignatureImpl(
 	return ret;
 }
 
-void msgApplySettingsImpl(ApplySettings *msg)
-{
+ErrCode_t msgApplySettingsImpl(ApplySettings *msg) {
 	_Static_assert(
 		sizeof(msg->label) == DEVICE_LABEL_SIZE, 
 		"device label size inconsitent betwen protocol and final storage");
-	CHECK_PARAM(msg->has_label || msg->has_language || msg->has_use_passphrase || msg->has_homescreen,
-				_("No setting provided"));
+	CHECK_PARAM_RET_ERR_CODE(msg->has_label || msg->has_language || msg->has_use_passphrase || msg->has_homescreen)
 	if (msg->has_label) {
 		storage_setLabel(msg->label);
-	} else {
-		char label[DEVICE_LABEL_SIZE];
-		_Static_assert(sizeof(label) >= sizeof(storage_uuid_str), 
-						"Label can be truncated");
-		strncpy(label, storage_uuid_str, 
-				MIN(sizeof(storage_uuid_str), sizeof(label)));
-		storage_setLabel(label);
 	}
 	if (msg->has_language) {
 		storage_setLanguage(msg->language);
@@ -270,15 +258,16 @@ void msgApplySettingsImpl(ApplySettings *msg)
 		storage_setHomescreen(msg->homescreen.bytes, msg->homescreen.size);
 	}
 	storage_update();
+	return ErrOk;
 }
 
 void msgGetFeaturesImpl(Features *resp)
 {
-	resp->has_vendor = true;         strlcpy(resp->vendor, "Skycoin Foundation", sizeof(resp->vendor));
-	resp->has_fw_major = true;  resp->fw_major = VERSION_MAJOR;
-	resp->has_fw_minor = true;  resp->fw_minor = VERSION_MINOR;
-	resp->has_fw_patch = true;  resp->fw_patch = VERSION_PATCH;
-	resp->has_device_id = true;      strlcpy(resp->device_id, storage_uuid_str, sizeof(resp->device_id));
+	resp->has_vendor = true;				 strlcpy(resp->vendor, "Skycoin Foundation", sizeof(resp->vendor));
+	resp->has_fw_major = true;	resp->fw_major = VERSION_MAJOR;
+	resp->has_fw_minor = true;	resp->fw_minor = VERSION_MINOR;
+	resp->has_fw_patch = true;	resp->fw_patch = VERSION_PATCH;
+	resp->has_device_id = true;			strlcpy(resp->device_id, storage_uuid_str, sizeof(resp->device_id));
 	resp->has_pin_protection = true; resp->pin_protection = storage_hasPin();
 	resp->has_passphrase_protection = true; resp->passphrase_protection = storage_hasPassphraseProtection();
 	resp->has_bootloader_hash = true; resp->bootloader_hash.size = memory_bootloader_hash(resp->bootloader_hash.bytes);
