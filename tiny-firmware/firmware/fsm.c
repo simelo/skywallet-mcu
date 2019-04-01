@@ -451,8 +451,11 @@ void fsm_msgSkycoinSignMessage(SkycoinSignMessage *msg)
 void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 {
 	RESP_INIT(ResponseSkycoinAddress);
-	if (msgSkycoinAddressImpl(msg, resp) == ErrOk) {
+	ErrCode_t err = msgSkycoinAddressImpl(msg, resp);
+	if (err == ErrOk) {
 		msg_write(MessageType_MessageType_ResponseSkycoinAddress, resp);
+	} else {
+		fsm_sendResponseFromErrCode(err, NULL, NULL);
 	}
 	layoutHome();
 }
