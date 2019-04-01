@@ -47,6 +47,98 @@
 #include "droplet.h"
 #include "skyparams.h"
 
+// Utils
+
+#define GEN_CASE(type, fail, msg) \
+	case type: \
+		fsm_sendFailure(fail, msg); \
+		break;
+
+void fsm_sendResponseFromErrCode(ErrCode_t err, const char *successMsg, const char *failMsg) {
+	FailureType failure;
+	switch (err) {
+		case ErrOk:
+			if (successMsg == NULL) {
+				successMsg = "Success";
+			}
+			fsm_sendSuccess(successMsg);
+			return;
+		case ErrFailed:
+			failure = FailureType_Failure_FirmwareError;
+			break;
+		case ErrInvalidArg:
+			failure = FailureType_Failure_DataError;
+			if (failMsg == NULL) {
+				failMsg = _("Invalid argument");
+			}
+			break;
+		case ErrIndexValue:
+			failure = FailureType_Failure_DataError;
+			if (failMsg == NULL) {
+				failMsg = _("Index out of bounds");
+			}
+			break;
+		case ErrInvalidValue:
+			failure = FailureType_Failure_ProcessError;
+			break;
+		case ErrNotImplemented:
+			failure = FailureType_Failure_FirmwareError;
+			if (failMsg == NULL) {
+				failMsg = _("Not Implemented");
+			}
+			break;
+		case ErrPinRequired:
+			failure = FailureType_Failure_PinExpected;
+			break;
+		case ErrPinMismatch:
+			failure = FailureType_Failure_PinMismatch;
+			break;
+		case ErrPinCancelled:
+			failure = FailureType_Failure_PinCancelled;
+			break;
+		case ErrActionCancelled:
+			failure = FailureType_Failure_ActionCancelled;
+			break;
+		case ErrNotInitialized:
+			failure = FailureType_Failure_NotInitialized;
+			break;
+		case ErrMnemonicRequired:
+			failure = FailureType_Failure_AddressGeneration;
+			if (failMsg == NULL) {
+				failMsg = _("Mnemonic required");
+			}
+			break;
+		case ErrAddressGeneration:
+			failure = FailureType_Failure_AddressGeneration;
+			break;
+		case ErrTooManyAddresses:
+			failure = FailureType_Failure_AddressGeneration;
+			if (failMsg == NULL) {
+				failMsg = _("Too many addresses requested");
+			}
+			break;
+		case ErrUnfinishedBackup:
+			// FIXME: FailureType_Failure_ProcessError ?
+			failure = FailureType_Failure_ActionCancelled;
+			if (failMsg == NULL) {
+				failMsg = _("Backup operation did not finish properly.");
+			}
+			break;
+		case ErrUnexpectedMessage:
+			failure = FailureType_Failure_UnexpectedMessage;
+			break;
+		case ErrSignPreconditionFailed:
+		case ErrInvalidSignature:
+			failure = FailureType_Failure_InvalidSignature;
+			break;
+		default:
+			failure = FailureType_Failure_FirmwareError;
+			failMsg = _("Unexpected failure");
+			break;
+	}
+	fsm_sendFailure(failure, failMsg);
+}
+
 extern uint8_t msg_resp[MSG_OUT_SIZE] __attribute__ ((aligned));
 
 void fsm_sendSuccess(const char *text)
