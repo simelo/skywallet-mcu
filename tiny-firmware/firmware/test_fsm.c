@@ -45,7 +45,7 @@ void forceGenerateMnemonic(void) {
 	ck_assert_int_eq(ErrOk, msgGenerateMnemonicImpl(&msg, &random_buffer));
 }
 
-bool is_a_base16_caharacter(char c) {
+bool is_base_16_char(char c) {
 	if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 		return true;
 	}
@@ -131,7 +131,7 @@ START_TEST(test_msgSkycoinSignMessageReturnIsInHex)
 	// 2 for each one in hex = 130
 	// TODO(denisacostaq@gmail.com): this kind of "dependency" is not maintainable.
 	for (size_t i = 0; i < sizeof(resp->signed_message); ++i) {
-		ck_assert(is_a_base16_caharacter(resp->signed_message[i]));
+		ck_assert(is_base_16_char(resp->signed_message[i]));
 	}
 }
 END_TEST
