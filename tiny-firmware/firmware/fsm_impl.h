@@ -129,26 +129,23 @@
 		return ErrInvalidValue; \
 	}
 
-ErrCode_t msgGenerateMnemonicImpl(
-		GenerateMnemonic* msg,
-		void (*random_buffer_func)(uint8_t *buf, size_t len));
+ErrCode_t msgApplySettingsImpl(ApplySettings *msg);
+ErrCode_t msgBackupDeviceImpl(BackupDevice *msg, ErrCode_t (*)(void));
+ErrCode_t msgChangePinImpl(ChangePin *msg, bool (*)(void));
 ErrCode_t msgEntropyAckImpl(EntropyAck* msg);
-ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage* msg,
-							ResponseSkycoinSignMessage *msg_resp);
-ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index,
-										char* signed_message);
+ErrCode_t msgGenerateMnemonicImpl(GenerateMnemonic* msg, void (*random_buffer_func)(uint8_t *buf, size_t len));
+ErrCode_t msgGetEntropyImpl(GetEntropy *msg);
+ErrCode_t msgGetFeaturesImpl(Features *resp);
+ErrCode_t msgLoadDeviceImpl(LoadDevice *msg);
+ErrCode_t msgNotImplementedImpl(void *msg);
+ErrCode_t msgPingImpl(Ping *msg);
+ErrCode_t msgRecoveryDeviceImpl(RecoveryDevice *msg, ErrCode_t (*)(void));
+ErrCode_t msgSetMnemonicImpl(SetMnemonic *msg);
+ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, char* signed_message);
 ErrCode_t msgSkycoinAddressImpl(SkycoinAddress* msg, ResponseSkycoinAddress *resp);
 ErrCode_t msgSkycoinCheckMessageSignatureImpl(SkycoinCheckMessageSignature* msg, Success *successResp, Failure *failureResp);
-ErrCode_t msgApplySettingsImpl(ApplySettings *msg);
-ErrCode_t msgGetFeaturesImpl(Features *resp);
+ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage *msg_resp);
 ErrCode_t msgTransactionSignImpl(TransactionSign *msg, ErrCode_t (*)(char*, char *, TransactionSign*, uint32_t));
-ErrCode_t msgPingImpl(Ping *msg);
-ErrCode_t msgChangePinImpl(ChangePin *msg, bool (*)(void));
 ErrCode_t msgWipeDeviceImpl(WipeDevice *msg);
-ErrCode_t msgSetMnemonicImpl(SetMnemonic *msg);
-ErrCode_t msgGetEntropyImpl(GetEntropy *msg);
-ErrCode_t msgLoadDeviceImpl(LoadDevice *msg);
-ErrCode_t msgBackupDeviceImpl(BackupDevice *msg, ErrCode_t (*)(void));
-ErrCode_t msgRecoveryDeviceImpl(RecoveryDevice *msg, ErrCode_t (*)(void));
 
 #endif  // __TINYFIRMWARE_FIRMWARE_FSMIMPL_H__

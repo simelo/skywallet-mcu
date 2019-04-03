@@ -31,14 +31,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Disable signing of generic messages.
+
 ### Removed
 
 - Installation instructions for `protobuf` related tools, use this from `hardware-wallet-protob` submodule.
 - Remove support to recover device from words matrix. The only support method is scrambled words.
 - Not possible to enforce BIP-39 wordlist during recovery process.
 - Not possible to perform dry-run recovery workflow (for safe mnemonic validation)
-
-### Fixed
 
 ### Security
 
