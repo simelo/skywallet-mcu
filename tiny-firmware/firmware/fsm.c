@@ -354,35 +354,33 @@ void fsm_msgSkycoinAddress(SkycoinAddress* msg)
 	RESP_INIT(ResponseSkycoinAddress);
 	char *failMsg = NULL;
 	ErrCode_t err = msgSkycoinAddressImpl(msg, resp);
-	if (err == ErrOk) {
-	} else {
-		switch (err) {
-			case ErrUserConfirmation:
-				layoutAddress(resp->addresses[0]);
-				if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
-					err = ErrActionCancelled;
-					break;
-				}
-			case ErrOk:
-				msg_write(MessageType_MessageType_ResponseSkycoinAddress, resp);
+	switch (err) {
+		case ErrUserConfirmation:
+			layoutAddress(resp->addresses[0]);
+			if (!protectButton(ButtonRequestType_ButtonRequest_ProtectCall, false)) {
+				err = ErrActionCancelled;
 				break;
-			case ErrPinRequired:
-				failMsg = _("Expected pin");
-				break;
-			case ErrTooManyAddresses:
-				failMsg = _("Asking for too much addresses");
-				break;
-			case ErrMnemonicRequired:
-				failMsg = _("Mnemonic required");
-				break;
-			case ErrAddressGeneration:
-				failMsg = _("Key pair generation failed");
-				break;
-			default:
-				break;
-		}
-		fsm_sendResponseFromErrCode(err, NULL, failMsg);
+			}
+      // fall through
+		case ErrOk:
+			msg_write(MessageType_MessageType_ResponseSkycoinAddress, resp);
+			break;
+		case ErrPinRequired:
+			failMsg = _("Expected pin");
+			break;
+		case ErrTooManyAddresses:
+			failMsg = _("Asking for too much addresses");
+			break;
+		case ErrMnemonicRequired:
+			failMsg = _("Mnemonic required");
+			break;
+		case ErrAddressGeneration:
+			failMsg = _("Key pair generation failed");
+			break;
+		default:
+			break;
 	}
+	fsm_sendResponseFromErrCode(err, NULL, failMsg);
 	layoutHome();
 }
 
@@ -523,7 +521,7 @@ void fsm_msgBackupDevice(BackupDevice *msg)
 	layoutHome();
 }
 
-ErrCode_t confirmRecovery() {
+ErrCode_t confirmRecovery(void) {
 	layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL, _("Do you really want to"), _("recover the device?"), NULL, NULL, NULL, NULL);
 	CHECK_BUTTON_PROTECT_RET_ERR_CODE
   return ErrOk;
