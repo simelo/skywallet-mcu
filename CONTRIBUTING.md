@@ -39,7 +39,7 @@ Testing is performed on top of [check framework](https://libcheck.github.io/chec
 
 ### Steps to add new test files
 
-- Create `test_FILENAME.c` and `test_FILENAME.h` from the C project template of your preference. Make sure to include the later in the former.
+- Create `test_FILENAME.c` and `test_FILENAME.h` at `./tiny-firmware/firmware/` from the C project template of your preference. Make sure to include the later in the former.
 - Include `check.h`.
 - Implement `void setup_tc_FILENAME(void)` and `void teardown_tc_FILENAME(void)` for preparing test fixture, if any.
 - Define test blocks enclosed between `START_TEST(test_TCNAME)` and `END_TEST` macros.
