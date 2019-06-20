@@ -129,8 +129,7 @@ void secp256k1sum(const uint8_t* seed, const size_t seed_length, uint8_t* digest
 
 #define DEBUG_DETERMINISTIC_KEY_PAIR_ITERATOR 0
 
-// next_seed should be 32 bytes (size of a secp256k1sum digest)
-void deterministic_key_pair_iterator(const uint8_t* seed, const size_t seed_length, uint8_t* next_seed, uint8_t* seckey, uint8_t* pubkey)
+bool deterministic_key_pair_iterator(const uint8_t* seed, const size_t seed_length, uint8_t* next_seed, uint8_t* seckey, uint8_t* pubkey)
 {
     /*
     SKYCOIN CIPHER AUDIT
@@ -142,6 +141,9 @@ void deterministic_key_pair_iterator(const uint8_t* seed, const size_t seed_leng
     // TODO: AUDIT: Why 256 here? seed can be any length in the skycoin cipher code.
     // If there are length restrictions imposed here, they must be enforced with a check
     uint8_t keypair_seed[256] = {0};
+    if (seed_length > sizeof(keypair_seed)) {
+        return false;
+    }
 
     secp256k1sum(seed, seed_length, seed1);
 
@@ -173,6 +175,7 @@ void deterministic_key_pair_iterator(const uint8_t* seed, const size_t seed_leng
     tohex(buf, pubkey, SKYCOIN_PUBKEY_LEN);
     printf("pubkey: %s\n", buf);
     #endif
+    return true;
 }
 
 // priv_key 32 bytes private key
