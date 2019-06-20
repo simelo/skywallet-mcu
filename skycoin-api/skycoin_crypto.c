@@ -127,7 +127,7 @@ void secp256k1sum(const uint8_t* seed, const size_t seed_length, uint8_t* digest
     sha256sum(hash_ecdh, digest, sizeof(hash_ecdh));
 }
 
-#define DEBUG_DETERMINISTIC_KEY_PAIR_ITERATOR 0
+#define DEBUG_DETERMINISTIC_KEY_PAIR_ITERATOR 1
 
 bool deterministic_key_pair_iterator(const uint8_t* seed, const size_t seed_length, uint8_t* next_seed, uint8_t* seckey, uint8_t* pubkey)
 {
