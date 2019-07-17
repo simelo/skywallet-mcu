@@ -16,6 +16,7 @@
 #if !EMULATOR
 
 #include "gpio_noise.h"
+#include "temperature_sensor.h"
 
 #endif // EMULATOR
 
@@ -122,6 +123,15 @@ void entropy_salt_mix_256(uint8_t* in, size_t in_len, uint8_t* buf)
     random_buffer((uint8_t*)&salt_ticker, sizeof(salt_ticker));
 #endif // EMULATOR
     entropy_mix_256((uint8_t*)&salt_ticker, sizeof(salt_ticker), NULL);
+
+#if !EMULATOR
+    // Salt source : Temperature sensor
+    uint16_t temperature = tempRead(); /// Read from ADC
+    entropy_mix_256((uint8_t*)&temperature, sizeof(temperature), NULL);
+
+    // Salt source : Systick timer
+    salt_ticker = timer_ms();
+#endif
 
     // Salt source : TRNG 32 bits
     uint32_t salt_trng = random32();

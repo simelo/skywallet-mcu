@@ -73,6 +73,7 @@ OBJS += firmware/reset.o
 OBJS += firmware/recovery.o
 OBJS += firmware/factory_test.o
 OBJS += firmware/gpio_noise.o
+OBJS += firmware/temperature_sensor.o
 OBJS += firmware/entropy.o
 OBJS += firmware/swtimer.o
 
