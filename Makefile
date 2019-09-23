@@ -19,7 +19,7 @@ FIRMWARE_SIGNATURE_PUB_KEYs = $(FIRMWARE_SIGNATURE_PUB_KEY1) $(FIRMWARE_SIGNATUR
 UNAME_S ?= $(shell uname -s)
 
 MAKE     ?= make
-PYTHON   ?= /usr/bin/python
+PYTHON   ?= /usr/bin/env python3 
 PIP      ?= pip
 PIPARGS  ?=
 COVERAGE ?= 0
