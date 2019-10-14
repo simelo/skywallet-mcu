@@ -53,5 +53,7 @@ void fsm_msgWordAck(WordAck* msg);
 void fsm_msgTransactionSign(TransactionSign* msg);
 void fsm_msgSignTx(SignTx* msg);
 void fsm_msgTxAck(TxAck* msg);
+void fsm_msgBitcoinSignTx(const BitcoinSignTx *msg);
+void fsm_msgBitcoinTxAck(BitcoinTxAck *msg);
 
 #endif

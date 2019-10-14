@@ -106,6 +106,14 @@ OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/pbkdf2.o
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/entropypool.o
 #end skycoin-crypto
 
+# bitcoin
+OBJS += firmware/bitcoin_signin.o
+OBJS += firmware/bitcoin.o
+OBJS += firmware/coins.o
+OBJS += firmware/crypto.o
+OBJS += firmware/transaction.o
+# end bitcoin
+
 ifeq ($(REVERSE_SCREEN),1)
 CFLAGS   += -DREVERSE_SCREEN=1
 endif
@@ -183,3 +191,6 @@ clean::
 
 coverage: test
 	gcov -n -b $(SRCS)
+
+coins:
+	$(PYTHON) $(TOP_DIR)/defs/cointool.py firmware/bitcoin.h.mako firmware/bitcoin.c.mako

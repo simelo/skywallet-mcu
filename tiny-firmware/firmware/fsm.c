@@ -23,7 +23,9 @@
 #include "base58.h"
 #include "bip32.h"
 #include "bip39.h"
+#include "bitcoin_signin.h"
 #include "check_digest.h"
+#include "coins.h"
 #include "droplet.h"
 #include "entropy.h"
 #include "fsm.h"
@@ -724,4 +726,33 @@ void fsm_msgTxAck(TxAck *msg) {
     }
     layoutHome();
     return;
+}
+
+void fsm_msgBitcoinSignTx(const BitcoinSignTx *msg) {
+    CHECK_INITIALIZED
+
+    CHECK_PARAM(msg->inputs_count > 0, _("Transaction must have at least one input"));
+    CHECK_PARAM(msg->outputs_count > 0, _("Transaction must have at least one output"));
+    CHECK_PARAM(msg->inputs_count + msg->outputs_count >= msg->inputs_count, _("Value overflow"));
+
+    CHECK_PIN
+
+    const CoinInfo *coin;
+    coin = coinByName("Bitcoin");
+    if (!coin) {
+        fsm_sendFailure(FailureType_Failure_DataError, _("Invalid coin name"), NULL);
+        layoutHome();
+        return;
+    }
+    static CONFIDENTIAL HDNode node;
+    const char* seed = storage_getFullSeed();
+    hdnode_from_seed((const uint8_t*)seed, 64, coin->curve_name, &node);
+
+    bitcoin_signing_init(msg, coin, &node);
+}
+
+void fsm_msgBitcoinTxAck(BitcoinTxAck *msg) {
+  CHECK_PARAM(msg->has_tx, _("No transaction provided"));
+
+  bitcoin_signing_txack(&(msg->tx));
 }

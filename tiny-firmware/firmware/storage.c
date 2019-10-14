@@ -28,6 +28,7 @@
 
 #include "bip32.h"
 #include "bip39.h"
+#include "curves.h"
 #include "firmware/entropy.h"
 #include "gettext.h"
 #include "hmac.h"
@@ -779,4 +780,16 @@ void storage_wipe(void)
     strncpy(storageUpdate.label, storage_uuid_str, sizeof(storageUpdate.label));
     storage_update();
     memset(int_entropy, 0, sizeof(int_entropy));
+}
+
+bool storage_getRootNode(HDNode *node, const char *curve){
+    StorageHDNode storageHDNode;
+    memzero(&storageHDNode, sizeof(storageHDNode));
+
+    const char *seed = storage_getFullSeed();
+    if (seed == NULL) {
+        return false;
+    }
+
+    return hdnode_from_seed((uint8_t*)seed, 64, curve, node);
 }
