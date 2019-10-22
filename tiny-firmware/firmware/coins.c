@@ -12,3 +12,12 @@ const CoinInfo *coinByName(const char *name) {
   }
   return 0;
 }
+
+const CoinInfo *coinByAddressType(uint32_t address_type) {
+  for (int i = 0; i < COINS_COUNT; i++) {
+    if (address_type == coins[i].address_type) {
+      return &(coins[i]);
+    }
+  }
+  return 0;
+}

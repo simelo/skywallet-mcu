@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "address.h"
 #include "base58.h"
 #include "bignum.h"
 #include "ecdsa.h"
@@ -942,6 +943,47 @@ int ecdsa_read_pubkey(const ecdsa_curve* curve, const uint8_t* pub_key, curve_po
     }
     // error
     return 0;
+}
+
+void ecdsa_get_address_raw(const uint8_t *pub_key, uint32_t version,
+                           HasherType hasher_pubkey, uint8_t *addr_raw) {
+  size_t prefix_len = address_prefix_bytes_len(version);
+  address_write_prefix_bytes(version, addr_raw);
+  ecdsa_get_pubkeyhash(pub_key, hasher_pubkey, addr_raw + prefix_len);
+}
+
+void ecdsa_get_address(const uint8_t *pub_key, uint32_t version,
+                       HasherType hasher_pubkey, HasherType hasher_base58,
+                       char *addr, int addrsize) {
+  uint8_t raw[MAX_ADDR_RAW_SIZE];
+  size_t prefix_len = address_prefix_bytes_len(version);
+  ecdsa_get_address_raw(pub_key, version, hasher_pubkey, raw);
+  base58_encode_check(raw, 20 + prefix_len, hasher_base58, addr, addrsize);
+  // not as important to clear this one, but we might as well
+  memzero(raw, sizeof(raw));
+}
+
+void ecdsa_get_address_segwit_p2sh_raw(const uint8_t *pub_key, uint32_t version,
+                                       HasherType hasher_pubkey,
+                                       uint8_t *addr_raw) {
+  uint8_t buf[32 + 2];
+  buf[0] = 0;   // version byte
+  buf[1] = 20;  // push 20 bytes
+  ecdsa_get_pubkeyhash(pub_key, hasher_pubkey, buf + 2);
+  size_t prefix_len = address_prefix_bytes_len(version);
+  address_write_prefix_bytes(version, addr_raw);
+  hasher_Raw(hasher_pubkey, buf, 22, addr_raw + prefix_len);
+}
+
+void ecdsa_get_address_segwit_p2sh(const uint8_t *pub_key, uint32_t version,
+                                   HasherType hasher_pubkey,
+                                   HasherType hasher_base58, char *addr,
+                                   int addrsize) {
+  uint8_t raw[MAX_ADDR_RAW_SIZE];
+  size_t prefix_len = address_prefix_bytes_len(version);
+  ecdsa_get_address_segwit_p2sh_raw(pub_key, version, hasher_pubkey, raw);
+  base58_encode_check(raw, prefix_len + 20, hasher_base58, addr, addrsize);
+  memzero(raw, sizeof(raw));
 }
 
 // Verifies that:

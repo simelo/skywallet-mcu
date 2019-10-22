@@ -37,6 +37,8 @@ typedef struct {
     HasherType hasher_type;    // hasher type for BIP32 and ECDSA
     HasherType hasher_base58;
     HasherType hasher_pubkey;
+    HasherType hasher_sign;
+    HasherType hasher_script;
 } curve_info;
 
 typedef struct {
@@ -51,6 +53,12 @@ typedef struct {
 int hdnode_from_xpub(uint32_t depth, uint32_t child_num, const uint8_t* chain_code, const uint8_t* public_key, const char* curve, HDNode* out);
 
 int hdnode_from_xprv(uint32_t depth, uint32_t child_num, const uint8_t* chain_code, const uint8_t* private_key, const char* curve, HDNode* out);
+
+int hdnode_public_ckd_cp(const ecdsa_curve *curve, const curve_point *parent, const uint8_t *parent_chain_code, uint32_t i, curve_point *child, uint8_t *child_chain_code);
+
+int hdnode_public_ckd(HDNode *inout, uint32_t i);
+
+int hdnode_private_ckd_cached(HDNode *inout, const uint32_t *i, size_t i_count, uint32_t *fingerprint);
 
 int hdnode_from_seed(const uint8_t* seed, int seed_len, const char* curve, HDNode* out);
 

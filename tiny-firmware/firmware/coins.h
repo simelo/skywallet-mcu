@@ -32,5 +32,6 @@ typedef struct _CoinInfo {
 } CoinInfo;
 
 const CoinInfo *coinByName(const char *name);
+const CoinInfo *coinByAddressType(uint32_t address_type);
 
 #endif

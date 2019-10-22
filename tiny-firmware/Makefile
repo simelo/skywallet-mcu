@@ -104,10 +104,18 @@ OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/secp256k1.o
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/bip39.o
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/pbkdf2.o
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/entropypool.o
+OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/address.o
+OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/blake2b.o
+OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/cash_addr.o
+OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/segwit_addr.o
+OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/sha3.o
 #end skycoin-crypto
 
+BITCOIN_ONLY ?= 0
+USE_KECCAK ?= 0
+
 # bitcoin
-OBJS += firmware/bitcoin_signin.o
+OBJS += firmware/bitcoin-signing.o
 OBJS += firmware/bitcoin.o
 OBJS += firmware/coins.o
 OBJS += firmware/crypto.o

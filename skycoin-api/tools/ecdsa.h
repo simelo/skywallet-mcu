@@ -79,10 +79,10 @@ int ecdsa_sign_digest_inner(const ecdsa_curve* curve, const uint8_t* priv_key, b
 void ecdsa_get_public_key33(const ecdsa_curve* curve, const uint8_t* priv_key, uint8_t* pub_key);
 void ecdsa_get_public_key65(const ecdsa_curve* curve, const uint8_t* priv_key, uint8_t* pub_key);
 void ecdsa_get_pubkeyhash(const uint8_t* pub_key, HasherType hasher_type, uint8_t* pubkeyhash);
-void ecdsa_get_address_raw(const uint8_t* pub_key, uint32_t version, HasherType hasher_type, uint8_t* addr_raw);
-void ecdsa_get_address(const uint8_t* pub_key, uint32_t version, HasherType hasher_type, char* addr, int addrsize);
-void ecdsa_get_address_segwit_p2sh_raw(const uint8_t* pub_key, uint32_t version, HasherType hasher_type, uint8_t* addr_raw);
-void ecdsa_get_address_segwit_p2sh(const uint8_t* pub_key, uint32_t version, HasherType hasher_type, char* addr, int addrsize);
+void ecdsa_get_address_raw(const uint8_t *pub_key, uint32_t version, HasherType hasher_pubkey, uint8_t *addr_raw);
+void ecdsa_get_address(const uint8_t *pub_key, uint32_t version, HasherType hasher_pubkey, HasherType hasher_base58, char *addr, int addrsize);
+void ecdsa_get_address_segwit_p2sh_raw(const uint8_t *pub_key, uint32_t version, HasherType hasher_pubkey, uint8_t *addr_raw);
+void ecdsa_get_address_segwit_p2sh(const uint8_t *pub_key, uint32_t version, HasherType hasher_pubkey, HasherType hasher_base58, char *addr, int addrsize);
 void ecdsa_get_wif(const uint8_t* priv_key, uint32_t version, HasherType hasher_type, char* wif, int wifsize);
 
 int ecdsa_address_decode(const char* addr, uint32_t version, HasherType hasher_type, uint8_t* out);

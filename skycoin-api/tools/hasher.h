@@ -27,13 +27,25 @@
 #include <stdint.h>
 
 #include "blake256.h"
+#include "blake2b.h"
 #include "sha2.h"
+#include "sha3.h"
 
 #define HASHER_DIGEST_LENGTH 32
 
 typedef enum {
     HASHER_SHA2,
+    HASHER_SHA2D,
+    HASHER_SHA2_RIPEMD,
+    HASHER_SHA3,
+#if USE_KECCAK
+    HASHER_SHA3K,
+#endif
     HASHER_BLAKE,
+    HASHER_BLAKED,
+    HASHER_BLAKE_RIPEMD,
+    // HASHER_GROESTLD_TRUNC,
+    HASHER_BLAKE2B,
     HASHER_BLAKE2B_PERSONAL,
 } HasherType;
 
@@ -42,10 +54,15 @@ typedef struct {
 
     union {
         SHA256_CTX sha2;
+        SHA3_CTX sha3;
         BLAKE256_CTX blake;
+        BLAKE2B_CTX blake2b;
     } ctx;
-} Hasher;
 
+    const void *param;
+    uint32_t param_size;
+} Hasher;
+void hasher_InitParam(Hasher *hasher, HasherType type, const void *param, uint32_t param_size);
 void hasher_Init(Hasher* hasher, HasherType type);
 void hasher_Reset(Hasher* hasher);
 void hasher_Update(Hasher* hasher, const uint8_t* data, size_t length);

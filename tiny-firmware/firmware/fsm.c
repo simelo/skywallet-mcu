@@ -23,7 +23,7 @@
 #include "base58.h"
 #include "bip32.h"
 #include "bip39.h"
-#include "bitcoin_signin.h"
+#include "bitcoin-signing.h"
 #include "check_digest.h"
 #include "coins.h"
 #include "droplet.h"

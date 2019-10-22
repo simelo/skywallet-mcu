@@ -93,6 +93,225 @@ int hdnode_from_xprv(uint32_t depth, uint32_t child_num, const uint8_t* chain_co
     return 1;
 }
 
+uint32_t hdnode_fingerprint(HDNode *node) {
+  uint8_t digest[32];
+  uint32_t fingerprint;
+
+  hdnode_fill_public_key(node);
+  hasher_Raw(node->curve->hasher_pubkey, node->public_key, 33, digest);
+  fingerprint = ((uint32_t)digest[0] << 24) + (digest[1] << 16) +
+                (digest[2] << 8) + digest[3];
+  memzero(digest, sizeof(digest));
+  return fingerprint;
+}
+
+int hdnode_private_ckd(HDNode *inout, uint32_t i) {
+  static CONFIDENTIAL uint8_t data[1 + 32 + 4];
+  static CONFIDENTIAL uint8_t I[32 + 32];
+  static CONFIDENTIAL bignum256 a, b;
+
+  if (i & 0x80000000) {  // private derivation
+    data[0] = 0;
+    memcpy(data + 1, inout->private_key, 32);
+  } else {  // public derivation
+    if (!inout->curve->params) {
+      return 0;
+    }
+    hdnode_fill_public_key(inout);
+    memcpy(data, inout->public_key, 33);
+  }
+  write_be(data + 33, i);
+
+  bn_read_be(inout->private_key, &a);
+
+  static CONFIDENTIAL HMAC_SHA512_CTX ctx;
+  hmac_sha512_Init(&ctx, inout->chain_code, 32);
+  hmac_sha512_Update(&ctx, data, sizeof(data));
+  hmac_sha512_Final(&ctx, I);
+
+  if (inout->curve->params) {
+    while (true) {
+      bool failed = false;
+      bn_read_be(I, &b);
+      if (!bn_is_less(&b, &inout->curve->params->order)) {  // >= order
+        failed = true;
+      } else {
+        bn_add(&b, &a);
+        bn_mod(&b, &inout->curve->params->order);
+        if (bn_is_zero(&b)) {
+          failed = true;
+        }
+      }
+
+      if (!failed) {
+        bn_write_be(&b, inout->private_key);
+        break;
+      }
+
+      data[0] = 1;
+      memcpy(data + 1, I + 32, 32);
+      hmac_sha512_Init(&ctx, inout->chain_code, 32);
+      hmac_sha512_Update(&ctx, data, sizeof(data));
+      hmac_sha512_Final(&ctx, I);
+    }
+  } else {
+    memcpy(inout->private_key, I, 32);
+  }
+
+  memcpy(inout->chain_code, I + 32, 32);
+  inout->depth++;
+  inout->child_num = i;
+  memzero(inout->public_key, sizeof(inout->public_key));
+
+  // making sure to wipe our memory
+  memzero(&a, sizeof(a));
+  memzero(&b, sizeof(b));
+  memzero(I, sizeof(I));
+  memzero(data, sizeof(data));
+  return 1;
+}
+
+int hdnode_public_ckd_cp(const ecdsa_curve *curve, const curve_point *parent,
+                         const uint8_t *parent_chain_code, uint32_t i,
+                         curve_point *child, uint8_t *child_chain_code) {
+  uint8_t data[1 + 32 + 4];
+  uint8_t I[32 + 32];
+  bignum256 c;
+
+  if (i & 0x80000000) {  // private derivation
+    return 0;
+  }
+
+  data[0] = 0x02 | (parent->y.val[0] & 0x01);
+  bn_write_be(&parent->x, data + 1);
+  write_be(data + 33, i);
+
+  while (true) {
+    hmac_sha512(parent_chain_code, 32, data, sizeof(data), I);
+    bn_read_be(I, &c);
+    if (bn_is_less(&c, &curve->order)) {  // < order
+      scalar_multiply(curve, &c, child);  // b = c * G
+      point_add(curve, parent, child);    // b = a + b
+      if (!point_is_infinity(child)) {
+        if (child_chain_code) {
+          memcpy(child_chain_code, I + 32, 32);
+        }
+
+        // Wipe all stack data.
+        memzero(data, sizeof(data));
+        memzero(I, sizeof(I));
+        memzero(&c, sizeof(c));
+        return 1;
+      }
+    }
+
+    data[0] = 1;
+    memcpy(data + 1, I + 32, 32);
+  }
+}
+
+int hdnode_public_ckd(HDNode *inout, uint32_t i) {
+  curve_point parent, child;
+
+  if (!ecdsa_read_pubkey(inout->curve->params, inout->public_key, &parent)) {
+    return 0;
+  }
+  if (!hdnode_public_ckd_cp(inout->curve->params, &parent, inout->chain_code, i,
+                            &child, inout->chain_code)) {
+    return 0;
+  }
+  memzero(inout->private_key, 32);
+  inout->depth++;
+  inout->child_num = i;
+  inout->public_key[0] = 0x02 | (child.y.val[0] & 0x01);
+  bn_write_be(&child.x, inout->public_key + 1);
+
+  // Wipe all stack data.
+  memzero(&parent, sizeof(parent));
+  memzero(&child, sizeof(child));
+
+  return 1;
+}
+
+#if USE_BIP32_CACHE
+static bool private_ckd_cache_root_set = false;
+static CONFIDENTIAL HDNode private_ckd_cache_root;
+static int private_ckd_cache_index = 0;
+
+static CONFIDENTIAL struct {
+  bool set;
+  size_t depth;
+  uint32_t i[BIP32_CACHE_MAXDEPTH];
+  HDNode node;
+} private_ckd_cache[BIP32_CACHE_SIZE];
+
+int hdnode_private_ckd_cached(HDNode *inout, const uint32_t *i, size_t i_count,
+                              uint32_t *fingerprint) {
+  if (i_count == 0) {
+    // no way how to compute parent fingerprint
+    return 1;
+  }
+  if (i_count == 1) {
+    if (fingerprint) {
+      *fingerprint = hdnode_fingerprint(inout);
+    }
+    if (hdnode_private_ckd(inout, i[0]) == 0) return 0;
+    return 1;
+  }
+
+  bool found = false;
+  // if root is not set or not the same
+  if (!private_ckd_cache_root_set ||
+      memcmp(&private_ckd_cache_root, inout, sizeof(HDNode)) != 0) {
+    // clear the cache
+    private_ckd_cache_index = 0;
+    memzero(private_ckd_cache, sizeof(private_ckd_cache));
+    // setup new root
+    memcpy(&private_ckd_cache_root, inout, sizeof(HDNode));
+    private_ckd_cache_root_set = true;
+  } else {
+    // try to find parent
+    int j;
+    for (j = 0; j < BIP32_CACHE_SIZE; j++) {
+      if (private_ckd_cache[j].set &&
+          private_ckd_cache[j].depth == i_count - 1 &&
+          memcmp(private_ckd_cache[j].i, i, (i_count - 1) * sizeof(uint32_t)) ==
+              0 &&
+          private_ckd_cache[j].node.curve == inout->curve) {
+        memcpy(inout, &(private_ckd_cache[j].node), sizeof(HDNode));
+        found = true;
+        break;
+      }
+    }
+  }
+
+  // else derive parent
+  if (!found) {
+    size_t k;
+    for (k = 0; k < i_count - 1; k++) {
+      if (hdnode_private_ckd(inout, i[k]) == 0) return 0;
+    }
+    // and save it
+    memzero(&(private_ckd_cache[private_ckd_cache_index]),
+            sizeof(private_ckd_cache[private_ckd_cache_index]));
+    private_ckd_cache[private_ckd_cache_index].set = true;
+    private_ckd_cache[private_ckd_cache_index].depth = i_count - 1;
+    memcpy(private_ckd_cache[private_ckd_cache_index].i, i,
+           (i_count - 1) * sizeof(uint32_t));
+    memcpy(&(private_ckd_cache[private_ckd_cache_index].node), inout,
+           sizeof(HDNode));
+    private_ckd_cache_index = (private_ckd_cache_index + 1) % BIP32_CACHE_SIZE;
+  }
+
+  if (fingerprint) {
+    *fingerprint = hdnode_fingerprint(inout);
+  }
+  if (hdnode_private_ckd(inout, i[i_count - 1]) == 0) return 0;
+
+  return 1;
+}
+#endif
+
 int hdnode_from_seed(const uint8_t* seed, int seed_len, const char* curve, HDNode* out)
 {
     static CONFIDENTIAL uint8_t I[32 + 32];
