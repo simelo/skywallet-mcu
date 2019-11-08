@@ -203,7 +203,7 @@ void send_req_1_input(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_2_prev_meta(void) {
@@ -215,7 +215,7 @@ void send_req_2_prev_meta(void) {
   resp.details.tx_hash.size = input.prev_hash.size;
   memcpy(resp.details.tx_hash.bytes, input.prev_hash.bytes,
          input.prev_hash.size);
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_2_prev_input(void) {
@@ -229,7 +229,7 @@ void send_req_2_prev_input(void) {
   resp.details.tx_hash.size = input.prev_hash.size;
   memcpy(resp.details.tx_hash.bytes, input.prev_hash.bytes,
          resp.details.tx_hash.size);
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_2_prev_output(void) {
@@ -243,7 +243,7 @@ void send_req_2_prev_output(void) {
   resp.details.tx_hash.size = input.prev_hash.size;
   memcpy(resp.details.tx_hash.bytes, input.prev_hash.bytes,
          resp.details.tx_hash.size);
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_2_prev_extradata(uint32_t chunk_offset, uint32_t chunk_len) {
@@ -259,7 +259,7 @@ void send_req_2_prev_extradata(uint32_t chunk_offset, uint32_t chunk_len) {
   resp.details.tx_hash.size = input.prev_hash.size;
   memcpy(resp.details.tx_hash.bytes, input.prev_hash.bytes,
          resp.details.tx_hash.size);
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_3_output(void) {
@@ -269,7 +269,7 @@ void send_req_3_output(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_4_input(void) {
@@ -279,7 +279,7 @@ void send_req_4_input(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx2;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_4_output(void) {
@@ -289,7 +289,7 @@ void send_req_4_output(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx2;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_segwit_input(void) {
@@ -299,7 +299,7 @@ void send_req_segwit_input(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_segwit_witness(void) {
@@ -309,7 +309,7 @@ void send_req_segwit_witness(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 #if !BITCOIN_ONLY
@@ -321,7 +321,7 @@ void send_req_decred_witness(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 #endif
@@ -333,13 +333,13 @@ void send_req_5_output(void) {
   resp.has_details = true;
   resp.details.has_request_index = true;
   resp.details.request_index = idx1;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void send_req_finished(void) {
   resp.has_request_type = true;
   resp.request_type = RequestType_TXFINISHED;
-  msg_write(MessageType_MessageType_TxRequest, &resp);
+  msg_write(MessageType_MessageType_BitcoinTxRequest, &resp);
 }
 
 void phase1_request_next_input(void) {
@@ -1096,7 +1096,7 @@ void bitcoin_signing_txack(BitcoinTxAck_TransactionType *tx) {
           return;
         }
       #endif
-
+  
         if (coin->force_bip143 || overwintered) {
           if (!tx->inputs[0].has_amount) {
             fsm_sendFailure(FailureType_Failure_DataError, _("Expected input with amount"), NULL);
