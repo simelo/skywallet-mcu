@@ -111,7 +111,7 @@ OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/segwit_addr.o
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/tools/sha3.o
 #end skycoin-crypto
 
-BITCOIN_ONLY ?= 0
+BITCOIN_ONLY ?= 1
 USE_KECCAK ?= 0
 
 # bitcoin
