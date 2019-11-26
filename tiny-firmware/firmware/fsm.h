@@ -22,6 +22,7 @@
 #define __FSM_H__
 
 #include "messages.pb.h"
+#include "messages-bitcoin.pb.h"
 
 // message functions
 

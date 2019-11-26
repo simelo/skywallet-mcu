@@ -7,7 +7,7 @@
 #include "bip32.h"
 #include "coins.h"
 #include "hasher.h"
-#include "messages.pb.h"
+#include "messages-bitcoin.pb.h"
 
 void bitcoin_signing_init(const BitcoinSignTx *msg, const CoinInfo *_coin,
                   const HDNode *_root);
