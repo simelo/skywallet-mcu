@@ -14,6 +14,7 @@
 
 #include "firmware/error.h"
 #include "messages.pb.h"
+#include "messages-skycoin.pb.h"
 
 #define MNEMONIC_WORD_COUNT_12 12
 #define MNEMONIC_WORD_COUNT_24 24

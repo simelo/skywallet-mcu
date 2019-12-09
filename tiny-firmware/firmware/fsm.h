@@ -23,6 +23,7 @@
 
 #include "messages.pb.h"
 #include "messages-bitcoin.pb.h"
+#include "messages-skycoin.pb.h"
 
 // message functions
 

@@ -84,6 +84,7 @@ OBJS += firmware/bootloader_integrity.o
 OBJS += protob/c/messages.pb.o
 OBJS += protob/c/types.pb.o
 OBJS += protob/c/messages-bitcoin.pb.o
+OBJS += protob/c/messages-skycoin.pb.o
 
 #skycoin-crypto
 OBJS += $(TOP_DIR)vendor/skycoin-crypto/skycoin_signature.o
