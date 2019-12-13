@@ -9,8 +9,7 @@
 #include "hasher.h"
 #include "messages-bitcoin.pb.h"
 
-void bitcoin_signing_init(const BitcoinSignTx *msg, const CoinInfo *_coin,
-                  const HDNode *_root);
+void bitcoin_signing_init(const BitcoinSignTx *msg, const CoinInfo *_coin, const HDNode *_root);
 void signing_abort(void);
 void bitcoin_signing_txack(BitcoinTxAck_TransactionType *tx);
 

@@ -118,7 +118,7 @@ BITCOIN_ONLY ?= 1
 USE_KECCAK ?= 0
 
 # bitcoin
-OBJS += firmware/bitcoin-signing.o
+OBJS += firmware/fsm_btc_impl.o
 OBJS += firmware/bitcoin.o
 OBJS += firmware/coins.o
 OBJS += firmware/crypto.o

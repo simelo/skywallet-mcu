@@ -17,10 +17,10 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "bitcoin-signing.h"
 #include "crypto.h"
 #include "ecdsa.h"
 #include "fsm.h"
+#include "fsm_btc_impl.h"
 #include "gettext.h"
 #include "layout2.h"
 #include "memzero.h"
