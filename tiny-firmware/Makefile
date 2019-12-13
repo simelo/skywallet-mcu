@@ -71,6 +71,7 @@ OBJS += firmware/messages.o
 OBJS += firmware/droplet.o
 OBJS += firmware/fsm.o
 OBJS += firmware/fsm_impl.o
+OBJS += firmware/fsm_sky_impl.o
 OBJS += firmware/protect.o
 OBJS += firmware/pinmatrix.o
 OBJS += firmware/reset.o
